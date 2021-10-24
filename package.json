@@ -1,0 +1,15 @@
+{
+  "name": "polyforum_backend",
+  "version": "1.0.0",
+  "description": "Backend for ",
+  "author": "Rémi Pailharey <remi.pailharey@etu.univ-lyon1.fr>",
+  "main": "server.js",
+  "repository": "https://github.com/Les-codeurs-d-abord/Polyforum_backend",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.1"
+  }
+}
