@@ -4,4 +4,4 @@
 
 Using XAMPP or WAMPP, create a database named "polyforum"
 
-Then, run ```node server.js``` at the root of the project.
+Run ```npm install``` to get all required dependencies, then, run ```node server.js``` at the root of the project.
