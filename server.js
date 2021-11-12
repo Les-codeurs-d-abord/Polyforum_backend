@@ -3,7 +3,6 @@ const express = require("express");
 // App
 const app = express();
 
-
 // parse requests of content-type - application/json
 app.use(express.json());
 
@@ -13,11 +12,11 @@ app.use(express.urlencoded({ extended: true }));
 const db = require("./app/models");
 db.sequelize.sync({ force: true }).then(() => {
     console.log("Drop and re-sync db.");
-  });
+});
 
 // simple route
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to les copains d'abord's application." });
+    res.json({ message: "Welcome to les copains d'abord's application." });
 });
 
 require("./app/routes/user.routes")(app);

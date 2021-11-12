@@ -1,13 +1,26 @@
 module.exports = (sequelize, Sequelize) => {
   const User = sequelize.define("user", {
-    firstName: {
-      type: Sequelize.STRING
+    email: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true
+      }
     },
-    lastName: {
-      type: Sequelize.STRING
+    password: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+      validate: {
+        notEmpty: true
+      }
     },
-    age: {
-      type: Sequelize.INTEGER
+    role: {
+      type: Sequelize.ENUM('ADMIN', 'CANDIDAT', 'ENTREPRISE'),
+      allowNull: false,
+      validate: {
+        isIn: [['ADMIN', 'CANDIDAT', 'ENTREPRISE']]
+      }
     }
   });
 
