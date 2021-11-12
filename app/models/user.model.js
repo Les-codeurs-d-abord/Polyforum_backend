@@ -15,18 +15,6 @@ module.exports = (sequelize, Sequelize) => {
         notEmpty: true
       }
     },
-    firstName: {
-      type: Sequelize.STRING(255)
-    },
-    lastName: {
-      type: Sequelize.STRING(255)
-    },
-    age: {
-      type: Sequelize.INTEGER,
-      validate: {
-        min: 0,
-      }
-    },
     role: {
       type: Sequelize.ENUM('ADMIN', 'CANDIDAT', 'ENTREPRISE'),
       allowNull: false,

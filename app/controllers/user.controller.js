@@ -7,9 +7,6 @@ exports.create = async (req, res) => {
     const user = {
         email: req.body.email,
         password: req.body.password,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        age: req.body.age,
         role: req.body.role
     };
 
@@ -90,7 +87,7 @@ exports.delete = async (req, res) => {
     }
 };
 
-// Find all admins
+// Find all admins (exemple)
 exports.findAllAdmins = async (req, res) => {
     try {
         const users = await User.findAll({
