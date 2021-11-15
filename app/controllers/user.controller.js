@@ -2,6 +2,11 @@ const db = require("../models");
 const User = db.users;
 const Op = db.Sequelize.Op;
 
+exports.getToken = async (req, res) => {
+    print("test");
+    return res.send("Oui");
+};
+
 // Create a user
 exports.create = async (req, res) => {
     const user = {

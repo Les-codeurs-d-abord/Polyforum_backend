@@ -3,6 +3,8 @@ module.exports = app => {
 
     const router = require("express").Router();
 
+    // router.get("/signin", users.getToken);
+
     // Create a new User
     router.post("/", users.create);
   
@@ -20,6 +22,6 @@ module.exports = app => {
   
     // Delete a User with id
     router.delete("/:id", users.delete);
-  
+
     app.use('/api/users', router);
   };
