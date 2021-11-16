@@ -2,10 +2,7 @@ const db = require("../models");
 const User = db.users;
 const Op = db.Sequelize.Op;
 
-exports.getToken = async (req, res) => {
-    print("test");
-    return res.send("Oui");
-};
+const bcrypt = require('bcryptjs');
 
 // Create a user
 exports.create = async (req, res) => {
@@ -15,11 +12,27 @@ exports.create = async (req, res) => {
         role: req.body.role
     };
 
+    // Validate user input
+    if (!(user.email && user.password && user.role)) {
+        return res.status(400).send("All input is required");
+    }
+
+    //Check if user already exists
+    const checkUser = await User.findOne({
+        where: {
+            email: "mika",
+        },
+    });
+
+    if (checkUser) {
+        return res.status(409).send("User Already Exist.");
+    }
+ 
     try {
         const savedUser = await User.create(user);
-        return res.send(savedUser);
-    } catch (err) {
-        return res.status(500).send(err.message);
+        return res.status(201).json(savedUser);
+    } catch (error) {
+        return res.status(501).json(error);
     }
 };
 
