@@ -9,7 +9,7 @@ app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 
-const db = require("./app/models");
+const db = require("./models");
 db.sequelize.sync({ force: true }).then(() => {
     console.log("Drop and re-sync db.");
 });
@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
     res.json({ message: "Welcome to les copains d'abord's application." });
 });
 
-require("./app/routes/user.routes")(app);
+require("./routes/user.routes")(app);
 
 var jwt = require('jsonwebtoken');
 var crypto = require('crypto');
