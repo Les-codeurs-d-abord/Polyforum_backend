@@ -4,7 +4,6 @@ module.exports = app => {
     const router = require("express").Router();
   
     router.get("/signin", users.getToken);
-    router.get("/signout", users.getToken);
   
     app.use('/api/login', router);
   };

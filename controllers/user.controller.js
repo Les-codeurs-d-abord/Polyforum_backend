@@ -2,38 +2,42 @@ const db = require("../models");
 const User = db.users;
 const Op = db.Sequelize.Op;
 
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 // Create a user
 exports.create = async (req, res) => {
-    const user = {
-        email: req.body.email,
-        password: req.body.password,
-        role: req.body.role
-    };
+    const { email, password, role } = req.body;
 
     // Validate user input
-    if (!(user.email && user.password && user.role)) {
+    if (!(email && password && role)) {
         return res.status(400).send("All input is required");
     }
 
     //Check if user already exists
     const checkUser = await User.findOne({
         where: {
-            email: "mika",
+            email: email,
         },
     });
 
     if (checkUser) {
         return res.status(409).send("User Already Exist.");
     }
- 
-    try {
-        const savedUser = await User.create(user);
-        return res.status(201).json(savedUser);
-    } catch (error) {
-        return res.status(501).json(error);
-    }
+
+    bcrypt.hash(password, saltRounds)
+        .then(hash => {
+            const user = {
+                email: email,
+                password: hash,
+                role: role
+            };
+
+            User.create(user)
+                .then((value) => res.status(201).json({ value }))
+                .catch(error => res.status(400).json({ error }));
+        })
+        .catch(error => res.status(500).json({ error }));
 };
 
 // Retrieve all Users from the database.
