@@ -1,9 +1,13 @@
 module.exports = app => {
-    const users = require("../controllers/login.controller.js");
+    const login = require("../controllers/login.controller.js");
   
     const router = require("express").Router();
   
-    router.get("/signin", users.getToken);
+    const auth = require("../middleware/auth");
+
+    router.get("/signin", login.getToken);
+
+    router.get("/info", auth, login.getInfo);
   
     app.use('/api/login', router);
   };
