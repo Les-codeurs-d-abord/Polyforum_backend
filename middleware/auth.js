@@ -4,8 +4,6 @@ const KEY = "HSNDKAJZRIWKNARHSKXH";
 module.exports = (req, res, next) => {
   console.log(req.headers.authorization);
 
-  const token = req.headers.authorization.split(' ')[1];
-
   try {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, KEY);
