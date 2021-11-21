@@ -8,15 +8,14 @@ const KEY = "HSNDKAJZRIWKNARHSKXH";
 const bcrypt = require('bcrypt');
 
 exports.getInfo = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  
+  console.log("info");
+  const { email, password } = req.body;
+  console.log(req.body);
   return res.status(200).send("Get info ok !");
 };
 
 exports.getToken = async (req, res) => {
   const { email, password } = req.body;
-
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   if (!email || !password) {
     return res.status(400).send("Email or password empty.");
