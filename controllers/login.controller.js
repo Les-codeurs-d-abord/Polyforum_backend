@@ -17,6 +17,9 @@ exports.getInfo = async (req, res) => {
 exports.getToken = async (req, res) => {
   const { email, password } = req.body;
 
+  console.log(req.body);
+  console.log("GeToken: " + email + password);
+
   if (!email || !password) {
     return res.status(400).send("Email or password empty.");
   }
