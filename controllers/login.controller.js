@@ -7,27 +7,19 @@ const KEY = "HSNDKAJZRIWKNARHSKXH";
 
 const bcrypt = require('bcrypt');
 
-exports.getInfo = async (req, res) => {
-  console.log("info");
-  const { email, password } = req.body;
-  console.log(req.body);
-  return res.status(200).send("Get info ok !");
-};
-
 exports.getToken = async (req, res) => {
   const { email, password } = req.body;
 
-  console.log(req.body);
-  console.log("GeToken: " + email + password);
+  console.log("GeToken: " + email);
 
   if (!email || !password) {
-    return res.status(400).send("Email or password empty.");
+    return res.status(401).send("Email or password empty.");
   }
 
   User.findOne({ where: { email: req.body.email } })
     .then(user => {
       if (!user) {
-        return res.status(401).json({ error: "Unknow user." });
+        return res.status(401).json({ error: "Unknown user." });
       }
 
       bcrypt.compare(password, user.password)
@@ -54,6 +46,6 @@ exports.getToken = async (req, res) => {
     .catch(error => res.status(500).json({ error }));
 };
 
-exports.removeToken = async (req, res) => {
-  return res.status(200).send("WIP - Remove token.");
+exports.checkTokenValidity = async (req, res) => {
+  return res.status(200).send("Token valide.");
 };

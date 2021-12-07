@@ -8,7 +8,7 @@ module.exports = app => {
 
     router.post("/signin", cors, login.getToken);
 
-    router.get("/info", auth, cors, login.getInfo);
+    router.get("/token", auth, cors, login.checkTokenValidity);
   
     app.use('/api/login', router);
   };
