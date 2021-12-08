@@ -17,7 +17,7 @@ exports.createCompany = async (req, res) => {
     const email = req.body.email;
     const companyName = req.body.companyName;
 
-    if(!(email && companyName)) {
+    if (!(email && companyName)) {
         return res.status(400).send("Au moins un champs manquant parmi [email, companyName]");
     }
 
@@ -31,17 +31,6 @@ exports.createCompany = async (req, res) => {
         return res.status(500).send(err.message);
     }
 }
-
-
-// Retrieve all Users from the database.
-exports.findAll = async (req, res) => {
-    try {
-        const users = await User.findAll();
-        return res.send(users);
-    } catch (err) {
-        return res.status(500).send(err.message);
-    }
-};
 
 // Find a single User with an id
 exports.findById = async (req, res) => {
@@ -102,13 +91,13 @@ exports.delete = async (req, res) => {
     }
 };
 
-// Find all admins (exemple)
+// Find all admins
 exports.findAllAdmins = async (req, res) => {
     try {
         const users = await User.findAll({
             where: {
                 role: {
-                    [Op.eq]: 'ADMIN'
+                    [Op.eq]: User.ROLES.ADMIN
                 }
             }
         });
@@ -118,3 +107,38 @@ exports.findAllAdmins = async (req, res) => {
         return res.status(500).send(err.message);
     }
 };
+
+
+// Find all companies
+exports.findAllCompanies = async (req, res) => {
+    try {
+        const users = await User.findAll({
+            where: {
+                role: {
+                    [Op.eq]: User.ROLES.COMPANY
+                }
+            }
+        });
+        return res.send(users);
+    }
+    catch (err) {
+        return res.status(500).send(err.message);
+    }
+};
+
+exports.companyList = async (req, res) => {
+    try {
+        const company_profiles = await CompanyProfile.findAll({
+            include: [{
+                model: User,
+                attributes: ['id', 'email'],
+            }],
+            attributes: ['companyName', 'logo']
+        });
+        return res.send(company_profiles);
+    }
+    catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+

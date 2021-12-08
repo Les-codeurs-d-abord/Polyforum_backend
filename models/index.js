@@ -23,7 +23,6 @@ db.users = require("./user.model.js")(sequelize, Sequelize);
 db.company_profiles = require("./company_profile.model.js")(sequelize, Sequelize);
 
 // Relations / Associations
-db.users.hasOne(db.company_profiles);
-
+db.company_profiles.belongsTo(db.users);
 
 module.exports = db;

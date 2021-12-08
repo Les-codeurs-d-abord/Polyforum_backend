@@ -8,11 +8,11 @@ module.exports = app => {
   // Create a new company User
   router.post("/companies", users.createCompany);
 
-  // Retrieve all Users
-  router.get("/", users.findAll);
-
   // Retrieve all admins
   router.get("/admins", users.findAllAdmins);
+
+  // Retrieve all companies
+  router.get("/companyList", users.companyList);
 
   // Retrieve a single User with id
   router.get("/:id", users.findById);
