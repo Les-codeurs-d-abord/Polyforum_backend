@@ -1,27 +1,37 @@
 const db = require("../models");
 const User = db.users;
+const CompanyProfile = db.company_profiles;
 const Op = db.Sequelize.Op;
+
+const UserService = require("../services/user.service");
+const CompanyProfileService = require("../services/company_profile.service");
 
 exports.getToken = async (req, res) => {
     print("test");
     return res.send("Oui");
 };
 
-// Create a user
-exports.create = async (req, res) => {
-    const user = {
-        email: req.body.email,
-        password: req.body.password,
-        role: req.body.role
-    };
+
+// Create a company
+exports.createCompany = async (req, res) => {
+    const email = req.body.email;
+    const companyName = req.body.companyName;
+
+    if(!(email && companyName)) {
+        return res.status(400).send("Au moins un champs manquant parmi [email, companyName]");
+    }
 
     try {
-        const savedUser = await User.create(user);
-        return res.send(savedUser);
+        const user = await UserService.createUser(email, User.ROLES.COMPANY);
+        console.log("Company created : ", user.toJSON())
+        const companyProfile = await CompanyProfileService.createCompanyProfile(user.id, companyName);
+        console.log("Company profile created : ", companyProfile.toJSON())
+        return res.send(user)
     } catch (err) {
         return res.status(500).send(err.message);
     }
-};
+}
+
 
 // Retrieve all Users from the database.
 exports.findAll = async (req, res) => {
@@ -54,7 +64,7 @@ exports.findById = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id;
     const updateContent = {
-        firstName: req.body.firstName,
+        email: req.body.email,
         lastName: req.body.lastName,
         age: req.body.age
     }

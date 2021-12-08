@@ -4,7 +4,6 @@ const Sequelize = require("sequelize");
 const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
   host: dbConfig.HOST,
   dialect: dbConfig.dialect,
-  operatorsAliases: false,
 
   pool: {
     max: dbConfig.pool.max,
@@ -19,7 +18,12 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
+// Entities
 db.users = require("./user.model.js")(sequelize, Sequelize);
+db.company_profiles = require("./company_profile.model.js")(sequelize, Sequelize);
+
+// Relations / Associations
+db.users.hasOne(db.company_profiles);
 
 
 module.exports = db;

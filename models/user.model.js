@@ -24,5 +24,11 @@ module.exports = (sequelize, Sequelize) => {
     }
   });
 
+  User.ROLES = {
+    ADMIN: "ADMIN",
+    COMPANY: "ENTREPRISE",
+    CANDIDATE: "CANDIDAT",
+  }
+
   return User;
 };

@@ -5,8 +5,8 @@ module.exports = app => {
 
   // router.get("/signin", users.getToken);
 
-  // Create a new User
-  router.post("/", users.create);
+  // Create a new company User
+  router.post("/companies", users.createCompany);
 
   // Retrieve all Users
   router.get("/", users.findAll);
