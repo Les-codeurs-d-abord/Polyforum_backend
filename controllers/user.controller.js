@@ -18,10 +18,10 @@ exports.createCompany = async (req, res) => {
 
     try {
         const companyUser = await UserService.createUser(email, User.ROLES.COMPANY);
-        console.log("Company created : ", user.toJSON())
+        // console.log("Company created : ", companyUser.toJSON())
         const companyProfile = await CompanyProfileService.createCompanyProfile(companyUser.id, companyName);
-        console.log("Company profile created : ", companyProfile.toJSON())
-        return res.status(201).send(user)
+        // console.log("Company profile created : ", companyProfile.toJSON())
+        return res.status(201).send("company created successfully")
     } catch (err) {
         return res.status(500).send(err.message);
     }

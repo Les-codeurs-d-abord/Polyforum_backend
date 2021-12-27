@@ -20,20 +20,18 @@ exports.createUser = async (email, role) => {
     // TODO: Générer un "vrai" mot de passe
     const password = generatePassword(25);
 
-    bcrypt.hash(password, saltRounds)
-        .then(hash => {
-            const user = {
-                email: email,
-                password: hash,
-                role: role
-            };
-
-            User.create(user)
-                .then((createdUser) => { return createdUser.toJSON() })
-                .catch(error => { throw new Error(error.message) });
-        })
-        .catch(error => { throw new Error(error.message) });
-
+    try {
+        const hash = await bcrypt.hash(password, saltRounds);
+        const user = {
+            email: email,
+            password: hash,
+            role: role
+        };
+        const savedUser = await User.create(user);
+        return savedUser;
+    } catch (err) {
+        throw new Error(err.message);
+    }
 };
 
 generatePassword = (length) => {
