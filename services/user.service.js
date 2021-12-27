@@ -1,21 +1,38 @@
 const db = require("../models");
 const User = db.users;
 
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 exports.createUser = async (email, role) => {
+
+    //Check if user already exists
+    const checkUser = await User.findOne({
+        where: {
+            email: email,
+        },
+    });
+
+    if (checkUser) {
+        throw new Error("User already exists.");
+    }
+
+    // TODO: Générer un "vrai" mot de passe
     const password = generatePassword(25);
 
-    const user = {
-        email: email,
-        role: role,
-        password: password,
-    };
+    bcrypt.hash(password, saltRounds)
+        .then(hash => {
+            const user = {
+                email: email,
+                password: hash,
+                role: role
+            };
 
-    try {
-        const savedUser = await User.create(user);
-        return savedUser;
-    } catch (err) {
-        throw new Error(err.message);
-    }
+            User.create(user)
+                .then((createdUser) => { return createdUser.toJSON() })
+                .catch(error => { throw new Error(error.message) });
+        })
+        .catch(error => { throw new Error(error.message) });
 
 };
 
