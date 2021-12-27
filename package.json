@@ -7,14 +7,18 @@
   "repository": "https://github.com/Les-codeurs-d-abord/Polyforum_backend",
   "license": "AGPL-3.0",
   "scripts": {
-    "start": "node server.js"
+    "start": "nodemon server.js"
   },
   "dependencies": {
+    "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
     "express": "^4.16.1",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.3.2",
-    "nodemon": "^2.0.15",
     "sequelize": "^6.9.0",
     "sqlite3": "^5.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
   }
 }

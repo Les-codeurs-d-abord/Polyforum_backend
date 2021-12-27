@@ -3,8 +3,6 @@ module.exports = app => {
 
   const router = require("express").Router();
 
-  // router.get("/signin", users.getToken);
-
   // Create a new company User
   router.post("/companies", users.createCompany);
 

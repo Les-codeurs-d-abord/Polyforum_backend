@@ -6,11 +6,6 @@ const Op = db.Sequelize.Op;
 const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
 
-exports.getToken = async (req, res) => {
-    print("test");
-    return res.send("Oui");
-};
-
 
 // Create a company
 exports.createCompany = async (req, res) => {
@@ -22,11 +17,11 @@ exports.createCompany = async (req, res) => {
     }
 
     try {
-        const user = await UserService.createUser(email, User.ROLES.COMPANY);
+        const companyUser = await UserService.createUser(email, User.ROLES.COMPANY);
         console.log("Company created : ", user.toJSON())
-        const companyProfile = await CompanyProfileService.createCompanyProfile(user.id, companyName);
+        const companyProfile = await CompanyProfileService.createCompanyProfile(companyUser.id, companyName);
         console.log("Company profile created : ", companyProfile.toJSON())
-        return res.send(user)
+        return res.status(201).send(user)
     } catch (err) {
         return res.status(500).send(err.message);
     }
@@ -141,4 +136,3 @@ exports.companyList = async (req, res) => {
         return res.status(500).send(err.message);
     }
 }
-
