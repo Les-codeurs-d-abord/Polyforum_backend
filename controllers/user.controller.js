@@ -5,6 +5,7 @@ const Op = db.Sequelize.Op;
 
 const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
+const MailService = require("../services/mail.service");
 
 
 // Create a company
@@ -17,10 +18,12 @@ exports.createCompany = async (req, res) => {
     }
 
     try {
-        const companyUser = await UserService.createUser(email, User.ROLES.COMPANY);
-        // console.log("Company created : ", companyUser.toJSON())
-        const companyProfile = await CompanyProfileService.createCompanyProfile(companyUser.id, companyName);
+        const { user, password } = await UserService.createUser(email, User.ROLES.COMPANY);
+        // console.log("Company created : ", user.toJSON())
+        const companyProfile = await CompanyProfileService.createCompanyProfile(user.id, companyName);
         // console.log("Company profile created : ", companyProfile.toJSON())
+        await MailService.sendAccountCreated(user.email, password);
+
         return res.status(201).send("company created successfully")
     } catch (err) {
         return res.status(500).send(err.message);

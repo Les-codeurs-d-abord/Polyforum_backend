@@ -22,13 +22,18 @@ exports.createUser = async (email, role) => {
 
     try {
         const hash = await bcrypt.hash(password, saltRounds);
-        const user = {
+        const userData = {
             email: email,
             password: hash,
             role: role
         };
-        const savedUser = await User.create(user);
-        return savedUser;
+        const user = await User.create(userData);
+
+        // throw new Error("monzbi");
+
+        // Send an email to the company to give the password
+
+        return { user, password };
     } catch (err) {
         throw new Error(err.message);
     }
