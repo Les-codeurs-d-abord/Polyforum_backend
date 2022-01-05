@@ -21,8 +21,10 @@ db.sequelize = sequelize;
 // Entities
 db.users = require("./user.model.js")(sequelize, Sequelize);
 db.company_profiles = require("./company_profile.model.js")(sequelize, Sequelize);
+db.offers = require("./offer.model.js")(sequelize, Sequelize);
 
 // Relations / Associations
 db.company_profiles.belongsTo(db.users);
+
 
 module.exports = db;
