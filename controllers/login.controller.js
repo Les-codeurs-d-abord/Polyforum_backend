@@ -1,9 +1,9 @@
+require('dotenv').config();
+
 const db = require("../models");
 const User = db.users;
-const Op = db.Sequelize.Op;
 
 var jwt = require('jsonwebtoken');
-const KEY = "HSNDKAJZRIWKNARHSKXH";
 
 const bcrypt = require('bcrypt');
 
@@ -36,7 +36,7 @@ exports.getToken = async (req, res) => {
             email: user.email,
             token: jwt.sign(
               payload,
-              KEY,
+              process.env.JWT_KEY,
               { algorithm: "HS256", expiresIn: "24h" }
             )
           });

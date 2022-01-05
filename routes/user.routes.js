@@ -3,14 +3,14 @@ module.exports = app => {
 
   const router = require("express").Router();
 
-  // Create a new User
-  router.post("/signup", users.create);
-
-  // Retrieve all Users
-  router.get("/", users.findAll);
+  // Create a new company User
+  router.post("/companies", users.createCompany);
 
   // Retrieve all admins
   router.get("/admins", users.findAllAdmins);
+
+  // Retrieve all companies
+  router.get("/companyList", users.companyList);
 
   // Retrieve a single User with id
   router.get("/:id", users.findById);
