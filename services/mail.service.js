@@ -1,17 +1,17 @@
-var nodemailer = require('nodemailer');
+var nodemailer = require("nodemailer");
+require('dotenv').config();
 
 let transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
-    // TODO: remplacer par une adresse dédié
-    user: "remipailharey@gmail.com",
-    pass: "hhwxvdzhqsqjylsw",
-  }
+    user: process.env.POLYFORUM_MAIL,
+    pass: process.env.POLYFORUM_MAIL_PASSWORD,
+  },
 });
 
 exports.sendAccountCreated = async (address, password) => {
   const mailOptions = {
-    from: '"Rémi P" <remipailharey@gmail.com>', // sender address
+    from: '"Polyforum" <' + process.env.POLYFORUM_MAIL + ">", // sender address
     to: address, // list of receivers
     subject: "Sending mail with Node.js", // Subject line
     text: "Password : " + password, // plain text body
@@ -22,7 +22,7 @@ exports.sendAccountCreated = async (address, password) => {
     if (error) {
       throw error;
     } else {
-      console.log('Email sent: ' + info.response);
+      console.log("Email sent: " + info.response);
     }
-  })
+  });
 };

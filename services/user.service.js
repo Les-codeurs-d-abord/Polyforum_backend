@@ -6,17 +6,6 @@ const saltRounds = 10;
 
 exports.createUser = async (email, role) => {
 
-    //Check if user already exists
-    const checkUser = await User.findOne({
-        where: {
-            email: email,
-        },
-    });
-
-    if (checkUser) {
-        throw new Error("User already exists.");
-    }
-
     // TODO: Générer un "vrai" mot de passe
     const password = generatePassword(25);
 
@@ -28,11 +17,6 @@ exports.createUser = async (email, role) => {
             role: role
         };
         const user = await User.create(userData);
-
-        // throw new Error("monzbi");
-
-        // Send an email to the company to give the password
-
         return { user, password };
     } catch (err) {
         throw new Error(err.message);
