@@ -15,7 +15,7 @@ exports.createCompany = async (req, res) => {
   if (!(email && companyName)) {
     return res
       .status(400)
-      .send("Au moins un champs manquant parmi [email, companyName]");
+      .send("Au moins un champ manquant (email / raison sociale)");
   }
 
   //Check if user already exists
@@ -30,7 +30,7 @@ exports.createCompany = async (req, res) => {
   });
   if (checkCompanyProfile) {
     return res.status(409).send("Cette entreprise est déjà inscrite")
-}
+  }
 
   try {
     const { user, password } = await UserService.createUser(
@@ -43,6 +43,7 @@ exports.createCompany = async (req, res) => {
       companyName
     );
     // console.log("Company profile created : ", companyProfile.toJSON())
+    // TODO Décommenter pour l'envoi des mails
     // await MailService.sendAccountCreated(user.email, password);
 
     return res.status(201).send("company created successfully");

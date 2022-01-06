@@ -2,9 +2,10 @@ module.exports = app => {
   const users = require("../controllers/user.controller.js");
 
   const router = require("express").Router();
+  const cors = require("../middleware/cors");
 
   // Create a new company User
-  router.post("/companies", users.createCompany);
+  router.post("/companies", cors, users.createCompany);
 
   // Retrieve all admins
   router.get("/admins", users.findAllAdmins);
