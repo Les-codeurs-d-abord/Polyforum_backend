@@ -1,5 +1,5 @@
 var nodemailer = require("nodemailer");
-require('dotenv').config();
+require("dotenv").config();
 
 let transporter = nodemailer.createTransport({
   service: "gmail",
@@ -13,9 +13,23 @@ exports.sendAccountCreated = async (address, password) => {
   const mailOptions = {
     from: '"Polyforum" <' + process.env.POLYFORUM_MAIL + ">", // sender address
     to: address, // list of receivers
-    subject: "Sending mail with Node.js", // Subject line
-    text: "Password : " + password, // plain text body
-    html: "<p>Password : " + password + "</p>", // html body
+    subject: "Inscription au forum", // Subject line
+    text:
+      "Bienvenue !\n" +
+      "Vous avez été bien inscrit au forum de rencontre apprentis/entreprises organisé par Polytech Lyon !\n" +
+      "Vous pouvez maintenant vous rendre sur ce site et vous connecter avec comme identifiant votre adresse mail et comme mot de pase provisoire : " +
+      password +
+      "\n" +
+      "Nous vous invitons à modifer ce-dernier lors de votre première connexion\n" +
+      "Bonne journée !", // plain text body
+    html:
+      "<h1>Bienvenue !</h1>" +
+      "<p>Vous avez été bien inscrit au forum de rencontre apprentis/entreprises organisé par Polytech Lyon !</p>" +
+      "<p>Vous pouvez maintenant vous rendre sur ce site et vous connecter avec comme identifiant votre adresse mail et comme mot de pase provisoire : " +
+      password +
+      "</p>" +
+      "<p>Nous vous invitons à modifer ce-dernier lors de votre première connexion </p>" +
+      "<p>Bonne journée !</p>", // html body
   };
 
   transporter.sendMail(mailOptions, function (error, info) {
