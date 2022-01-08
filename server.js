@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require('path');
 
 // App
 const app = express();
@@ -10,8 +11,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const db = require("./models");
-//.sync({ force: true })
-db.sequelize.sync({ force: true }).then(() => {
+db.sequelize.sync({ force: false, alter: false }).then(() => {
   console.log("Drop and re-sync db.");
 });
 
@@ -25,6 +25,20 @@ require("./routes/login.routes")(app);
 
 //debug
 require("./routes/debug.routes")(app);
+
+
+app.get("/data/:folder/:file", (req, res) => {
+  let filePath = path.join(__dirname, "/data/", req.params.folder, "/", req.params.file);
+
+  res.sendFile(filePath, function (err) {
+    if (err) {
+      console.log(err);
+      res.status(err.status).end();
+    } else {
+      console.log('Sent:', filePath);
+    }
+  });
+})
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
