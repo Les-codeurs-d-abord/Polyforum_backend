@@ -5,7 +5,7 @@ module.exports = (sequelize, Sequelize) => {
       allowNull: false,
       unique: true
     },
-    telephone: {
+    phoneNumber: {
       type: Sequelize.STRING(255),
       validate: {
         notEmpty: true
@@ -14,9 +14,6 @@ module.exports = (sequelize, Sequelize) => {
     description: {
       type: Sequelize.TEXT,
     },
-    linkedinLink: {
-      type: Sequelize.TEXT,
-    }, 
     logo: {
       type: Sequelize.BLOB('long'),
     }
