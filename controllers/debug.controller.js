@@ -2,6 +2,22 @@ const db = require("../models");
 const Offers = db.offers;
 const Tags = db.tags;
 const Offer_Tags = db.offer_tags;
+const path = require('path');
+
+// Get a file
+exports.getFile = async (req, res) => {
+  console.log("Get File");
+  let filePath = path.join(__dirname, "../data/", req.params.folder, "/", req.params.file);
+
+  res.sendFile(filePath, function (err) {
+    if (err) {
+      console.log(err);
+      res.status(err.status).end();
+    } else {
+      console.log('Sent:', filePath);
+    }
+  });
+};
 
 // Create an offer
 exports.create = async (req, res) => {
@@ -31,30 +47,29 @@ exports.getAll = async (req, res) => {
   console.log(req.query.tag);
 
   try {
-    // Offers.findAll({ include: { all: true, nested: true } }).then(offerList => {
-    //   // console.log(offerList);
-    //   return res.status(200).json(offerList);
-    // });
-
-    Offers.findAll({
-      include: [
-        {
-          model: Offer_Tags,
-          require: true,
-          include: [
-            {
-              model: Tags,
-              where: { label: req.query.tag },
-              require: true,
-            }
-          ]
-        }
-      ],
-    }).then(offerList => {
-      console.log(offerList);
-      return res.status(200).json(offerList);
-    });
-
+    if (!req.query.tag) {
+      Offers.findAll({ include: { all: true, nested: true } }).then(offerList => {
+        return res.status(200).json(offerList);
+      });
+    }
+    else {
+      Offers.findAll({
+        where: { '$offer_tags.tag.label$': req.query.tag },
+        include: [
+          {
+            model: Offer_Tags,
+            include: [
+              {
+                model: Tags,
+              }
+            ],
+          }
+        ],
+      }).then(offerList => {
+        console.log(offerList);
+        return res.status(200).json(offerList);
+      });
+    }
   }
   catch (err) {
     return res.status(500).send(err.message);

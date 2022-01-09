@@ -20,5 +20,7 @@ module.exports = app => {
   router.get("/offer_tag/:offerId", cors, debug.findOfferTagByOfferId);
   router.get("/offer_tag", cors, debug.findAllOfferTags);
 
+  router.get("/data/:folder/:file", cors, debug.getFile);
+
   app.use('/api/debug', router);
 };

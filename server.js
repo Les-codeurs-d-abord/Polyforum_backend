@@ -1,5 +1,4 @@
 const express = require("express");
-const path = require('path');
 
 // App
 const app = express();
@@ -25,20 +24,6 @@ require("./routes/login.routes")(app);
 
 //debug
 require("./routes/debug.routes")(app);
-
-
-app.get("/data/:folder/:file", (req, res) => {
-  let filePath = path.join(__dirname, "/data/", req.params.folder, "/", req.params.file);
-
-  res.sendFile(filePath, function (err) {
-    if (err) {
-      console.log(err);
-      res.status(err.status).end();
-    } else {
-      console.log('Sent:', filePath);
-    }
-  });
-})
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

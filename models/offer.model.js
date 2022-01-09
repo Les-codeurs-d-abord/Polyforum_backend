@@ -30,6 +30,27 @@ module.exports = (sequelize, Sequelize) => {
         notEmpty: true
       }
     },
+    phoneNumber: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+      validate: {
+        notEmpty: true
+      }
+    },
+    email: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+      validate: {
+        notEmpty: true
+      }
+    },
+    address: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+      validate: {
+        notEmpty: true
+      }
+    },
     companyId: {
       type: Sequelize.INTEGER
     }
