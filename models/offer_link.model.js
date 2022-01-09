@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const link = sequelize.define("link", {
+  const offer_link = sequelize.define("offer_link", {
     offerId: {
       type: Sequelize.INTEGER,
       references: {
@@ -16,5 +16,5 @@ module.exports = (sequelize, Sequelize) => {
     }
   });
 
-  return link;
+  return offer_link;
 };

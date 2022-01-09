@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const db = require("./models");
-db.sequelize.sync({ force: false, alter: false }).then(() => {
+db.sequelize.sync({ force: true, alter: true }).then(() => {
   console.log("Drop and re-sync db.");
 });
 

@@ -25,13 +25,13 @@ db.candidate_profiles = require("./candidate_profile.model.js")(sequelize, Seque
 db.offers = require("./offer.model.js")(sequelize, Sequelize);
 db.tags = require("./tag.model.js")(sequelize, Sequelize);
 db.offer_tags = require("./offer_tag.model.js")(sequelize, Sequelize);
-db.links = require("./link.model.js")(sequelize, Sequelize);
+db.offer_links = require("./offer_link.model.js")(sequelize, Sequelize);
 
 db.offers.hasMany(db.offer_tags, { foreignKey: 'offerId' });
 db.offer_tags.belongsTo(db.offers, { foreignKey: 'offerId' });
 
-db.offers.hasMany(db.links);
-db.links.belongsTo(db.offers);
+db.offers.hasMany(db.offer_links);
+db.offer_links.belongsTo(db.offers);
 
 db.tags.hasMany(db.offer_tags);
 db.offer_tags.belongsTo(db.tags);
