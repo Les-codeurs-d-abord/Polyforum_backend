@@ -26,6 +26,18 @@ db.offers = require("./offer.model.js")(sequelize, Sequelize);
 db.tags = require("./tag.model.js")(sequelize, Sequelize);
 db.offer_tags = require("./offer_tag.model.js")(sequelize, Sequelize);
 db.offer_links = require("./offer_link.model.js")(sequelize, Sequelize);
+db.candidate_links = require("./candidate_link.model.js")(sequelize, Sequelize);
+db.company_links = require("./company_link.model.js")(sequelize, Sequelize);
+
+
+// Relations / Associations
+db.company_profiles.belongsTo(db.users);
+db.company_profiles.hasMany(db.company_links);
+db.company_links.belongsTo(db.company_profiles);
+
+db.candidate_profiles.belongsTo(db.users);
+db.candidate_profiles.hasMany(db.candidate_links);
+db.candidate_links.belongsTo(db.candidate_profiles);
 
 db.offers.hasMany(db.offer_tags, { foreignKey: 'offerId' });
 db.offer_tags.belongsTo(db.offers, { foreignKey: 'offerId' });
@@ -33,12 +45,9 @@ db.offer_tags.belongsTo(db.offers, { foreignKey: 'offerId' });
 db.offers.hasMany(db.offer_links);
 db.offer_links.belongsTo(db.offers);
 
+
 db.tags.hasMany(db.offer_tags);
 db.offer_tags.belongsTo(db.tags);
-
-// Relations / Associations
-db.company_profiles.belongsTo(db.users);
-db.candidate_profiles.belongsTo(db.users);
 
 
 module.exports = db;
