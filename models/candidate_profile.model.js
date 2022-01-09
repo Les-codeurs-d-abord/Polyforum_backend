@@ -20,9 +20,6 @@ module.exports = (sequelize, Sequelize) => {
     description: {
       type: Sequelize.TEXT,
     },
-    linkedinLink: {
-      type: Sequelize.TEXT,
-    }, 
     logo: {
       type: Sequelize.BLOB('long'),
     }
