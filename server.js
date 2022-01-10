@@ -20,6 +20,7 @@ app.get("/", (req, res) => {
 });
 
 require("./routes/user.routes")(app);
+require("./routes/company.routes")(app);
 require("./routes/login.routes")(app);
 
 //debug
