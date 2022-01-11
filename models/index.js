@@ -39,12 +39,13 @@ db.candidate_profiles.belongsTo(db.users);
 db.candidate_profiles.hasMany(db.candidate_links);
 db.candidate_links.belongsTo(db.candidate_profiles);
 
-db.offers.hasMany(db.offer_tags, { foreignKey: 'offerId' });
-db.offer_tags.belongsTo(db.offers, { foreignKey: 'offerId' });
+db.offers.hasMany(db.offer_tags);
+db.offer_tags.belongsTo(db.offers);
 
 db.offers.hasMany(db.offer_links);
 db.offer_links.belongsTo(db.offers);
 
+db.offers.belongsTo(db.company_profiles);
 
 db.tags.hasMany(db.offer_tags);
 db.offer_tags.belongsTo(db.tags);
