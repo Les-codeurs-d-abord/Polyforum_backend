@@ -28,6 +28,8 @@ db.offer_tags = require("./offer_tag.model.js")(sequelize, Sequelize);
 db.offer_links = require("./offer_link.model.js")(sequelize, Sequelize);
 db.candidate_links = require("./candidate_link.model.js")(sequelize, Sequelize);
 db.company_links = require("./company_link.model.js")(sequelize, Sequelize);
+db.wish_candidate = require("./wish_candidate.model.js")(sequelize, Sequelize);
+db.wish_company = require("./wish_company.model")(sequelize, Sequelize);
 
 
 // Relations / Associations
