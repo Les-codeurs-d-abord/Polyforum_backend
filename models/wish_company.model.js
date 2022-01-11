@@ -3,15 +3,15 @@ module.exports = (sequelize, Sequelize) => {
         companyId: {
             type: Sequelize.INTEGER,
             references: {
-                model: 'company_profile',
+                model: 'company_profiles',
                 key: 'id',
             }
         },
         candidateId: {
             type: Sequelize.INTEGER,
             references: {
-            model: 'candidate_profiles',
-            key: 'id',
+                model: 'candidate_profiles',
+                key: 'id',
             }
         }
     });
