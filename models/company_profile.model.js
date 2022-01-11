@@ -7,9 +7,6 @@ module.exports = (sequelize, Sequelize) => {
     },
     phoneNumber: {
       type: Sequelize.STRING(255),
-      validate: {
-        notEmpty: true
-      }
     },
     description: {
       type: Sequelize.TEXT,

@@ -16,5 +16,8 @@ module.exports = (app) => {
   // Delete a single company with id
   router.delete("/:userId", companyController.deleteById);
 
+  // Update a company profile with id
+  router.put("/:companyProfileId", companyController.updateCompanyProfile)
+
   app.use("/api/companies", router);
 };

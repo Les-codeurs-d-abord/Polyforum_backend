@@ -100,26 +100,35 @@ exports.deleteById = async (req, res) => {
 };
 
 // Update a User by the id in the request
-exports.update = async (req, res) => {
-  const id = req.params.id;
+exports.updateCompanyProfile = async (req, res) => {
+  const companyProfileId = req.params.companyProfileId;
   const updateContent = {
-    email: req.body.email,
-    lastName: req.body.lastName,
-    age: req.body.age,
+    companyName: req.body.companyName,
+    phoneNumber: req.body.phoneNumber,
+    description: req.body.description,
   };
 
+  if (!updateContent.companyName) {
+    return res
+      .status(400)
+      .send(
+        "Au moins un champ manquant (raison sociale / téléphone / description)"
+      );
+  }
+
+  //Check if this company profile exists
+  const checkCompanyProfile = await CompanyProfile.findOne({
+    where: { id: companyProfileId },
+  });
+  if (!checkCompanyProfile) {
+    return res.status(409).send("Ce profil d'entreprise n'existe pas");
+  }
+
   try {
-    const test = await User.update(updateContent, {
-      where: { id: id },
+    await CompanyProfile.update(updateContent, {
+      where: { id: companyProfileId },
     });
-    console.log(test);
-    if (test > 0) {
-      return res.send({ message: `Utilisateur ${id} mis à jour` });
-    } else {
-      return res.send({
-        message: `Aucune mise à jour pour l'utilisateur ${id}`,
-      });
-    }
+    return res.send({ message: `Profil d'entreprise ${companyProfileId} mis à jour` });
   } catch (err) {
     return res.status(500).send(err.message);
   }
