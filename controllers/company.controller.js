@@ -104,8 +104,8 @@ exports.updateCompanyProfile = async (req, res) => {
   const companyProfileId = req.params.companyProfileId;
   const updateContent = {
     companyName: req.body.companyName,
-    phoneNumber: req.body.phoneNumber,
-    description: req.body.description,
+    phoneNumber: req.body.phoneNumber ? req.body.phoneNumber : null,
+    description: req.body.description ? req.body.description : null,
   };
 
   if (!updateContent.companyName) {
