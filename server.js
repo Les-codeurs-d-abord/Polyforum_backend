@@ -20,6 +20,8 @@ app.get("/", (req, res) => {
 });
 
 require("./routes/user.routes")(app);
+require("./routes/company.routes")(app);
+require("./routes/candidate.routes")(app);
 require("./routes/login.routes")(app);
 require("./routes/offer.routes")(app);
 require("./routes/tag.routes")(app);
