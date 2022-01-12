@@ -2,13 +2,6 @@ const offer_tag = require("./user.model.js");
 
 module.exports = (sequelize, Sequelize) => {
   const Offer = sequelize.define("offer", {
-    companyName: {
-      type: Sequelize.STRING(255),
-      allowNull: false,
-      validate: {
-        notEmpty: true
-      }
-    },
     name: {
       type: Sequelize.STRING(255),
       allowNull: false,
@@ -23,7 +16,7 @@ module.exports = (sequelize, Sequelize) => {
         notEmpty: true
       }
     },
-    icon: {
+    offerLink: {
       type: Sequelize.STRING(255),
       allowNull: false,
       validate: {
@@ -51,9 +44,6 @@ module.exports = (sequelize, Sequelize) => {
         notEmpty: true
       }
     },
-    companyId: {
-      type: Sequelize.INTEGER
-    }
   });
 
   return Offer;

@@ -19,7 +19,7 @@ exports.update = async (req, res) => {
   if (checkUser) {
     return res.status(409).send("Cet email est déjà utilisé");
   }
-
+  
   try {
     password = await UserService.update(userId, email);
     // TODO Décommenter pour l'envoi des mails

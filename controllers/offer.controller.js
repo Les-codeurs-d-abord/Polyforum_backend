@@ -2,39 +2,27 @@ const db = require("../models");
 const Offers = db.offers;
 const Tags = db.tags;
 const Offer_Tags = db.offer_tags;
-const path = require('path');
-
-// Get a file
-exports.getFile = async (req, res) => {
-  console.log("Get File");
-  let filePath = path.join(__dirname, "../data/", req.params.folder, "/", req.params.file);
-
-  res.sendFile(filePath, function (err) {
-    if (err) {
-      console.log(err);
-      res.status(err.status).end();
-    } else {
-      console.log('Sent:', filePath);
-    }
-  });
-};
+const Offer_Links = db.offer_links;
+const Company_Profiles = db.company_profiles;
+const { Sequelize } = require("../models");
 
 // Create an offer
-exports.create = async (req, res) => {
-  console.log("Create offer");
-  const { companyName, name, description, icon, companyId } = req.body;
+exports.createOffer = async (req, res) => {
+  const { companyProfileId, name, description, offerLink, phoneNumber, email, address } = req.body;
 
   // Validate input
-  if (!(companyName && name && description && icon && companyId)) {
+  if (!(name && description && companyProfileId && offerLink && email && phoneNumber && address)) {
     return res.status(400).send("All input is required");
   }
 
   const offer = {
-    companyName: companyName,
+    companyProfileId: companyProfileId,
     name: name,
     description: description,
-    icon: icon,
-    companyId: companyId
+    offerLink: offerLink,
+    email: email,
+    phoneNumber: phoneNumber,
+    address: address,
   };
 
   Offers.create(offer)
@@ -43,100 +31,128 @@ exports.create = async (req, res) => {
     );
 };
 
-exports.getAll = async (req, res) => {
-  console.log(req.query.tag);
-
+exports.getAllOffer = async (req, res) => {
   try {
-    if (!req.query.tag) {
-      Offers.findAll({ include: { all: true, nested: true } }).then(offerList => {
-        return res.status(200).json(offerList);
+    var whereStatmentTag = {};
+    var whereStatmentInput = {};
+
+    if (req.query.tag) {
+      //Check if Tag already exists
+      const checkOfferTag = await Offer_Tags.findOne({
+        where: {
+          id: req.query.tag
+        },
       });
+
+      if (checkOfferTag) {
+        const offerIdList = await Offers.findAll({
+          raw: true,
+          where: { '$offer_tags.tagId$': req.query.tag },
+          attributes: ['id'],
+          include: [
+            {
+              model: Offer_Tags,
+              attributes: [],
+              include: [
+                {
+                  attributes: [],
+                  model: Tags,
+                }
+              ],
+            }
+          ],
+        });
+
+        var idList = [];
+        for (var i in offerIdList) {
+          idList.push(offerIdList[i]['id']);
+        }
+
+        whereStatmentTag.id = idList;
+      }
     }
-    else {
-      Offers.findAll({
-        where: { '$offer_tags.tag.label$': req.query.tag },
-        include: [
-          {
-            model: Offer_Tags,
-            include: [
-              {
-                model: Tags,
-              }
-            ],
-          }
-        ],
-      }).then(offerList => {
-        console.log(offerList);
-        return res.status(200).json(offerList);
-      });
+
+    if (req.query.input) {
+      whereStatmentInput = Sequelize.or(
+        {
+          "name": {
+            [Sequelize.Op.like]: "%" + req.query.input + "%"
+          },
+        },
+        {
+          "description": {
+            [Sequelize.Op.like]: "%" + req.query.input + "%"
+          },
+        },
+        {
+          '$company_profile.companyName$': {
+            [Sequelize.Op.like]: "%" + req.query.input + "%"
+          },
+        }
+      );
     }
+
+    Offers.findAll({
+      where: Sequelize.and(
+        whereStatmentTag,
+        whereStatmentInput,
+      ),
+      include: [
+        {
+          model: Company_Profiles,
+        },
+        {
+          model: Offer_Links,
+        },
+        {
+          model: Offer_Tags,
+          include: [
+            {
+              model: Tags,
+            }
+          ],
+        }
+      ],
+    }).then(offerList => {
+      console.log(offerList);
+      return res.status(200).json(offerList);
+    });
   }
   catch (err) {
     return res.status(500).send(err.message);
   }
 };
 
-// Create a tag
-exports.createTag = async (req, res) => {
-  const { label } = req.body;
+exports.createOfferLink = async (req, res) => {
+  const { offerId, label } = req.body;
 
   // Validate input
-  if (!(label)) {
+  if (!(label && offerId)) {
     return res.status(400).send("All input is required");
   }
 
   //Check if Tag already exists
-  const checkTag = await Tags.findOne({
+  const checkOfferLink = await Offer_Links.findOne({
     where: {
+      offerId: offerId,
       label: label,
     },
   });
 
-  if (checkTag) {
+  if (checkOfferLink) {
     return res.status(409).send("Tag Already Exist.");
   }
 
-  const tag = {
+  const offerLink = {
+    offerId: offerId,
     label: label,
   };
 
-  Tags.create(tag)
+  Offer_Links.create(offerLink)
     .then((value) => res.status(201).json({ value }))
     .catch(error => res.status(400).json({ error })
     );
 };
-
-// Find a single Tag with an id
-exports.findTagById = async (req, res) => {
-  const id = req.params.id;
-
-  try {
-    const tag = await Tags.findOne({
-      where: {
-        id: id,
-      }
-    });
-
-    if (tag) {
-      return res.send(tag);
-    } else {
-      return res.status(404).send(`Aucun Tag trouvé pour l'id ${id}`);
-    }
-  } catch (err) {
-    return res.status(500).send(err.message);
-  }
-};
-
-// Retrieve all Tags.
-exports.findAllTags = async (req, res) => {
-  try {
-    const tags = await Tags.findAll();
-    return res.send(tags);
-  } catch (err) {
-    return res.status(500).send(err.message);
-  }
-};
-
 
 //Offer Tags//
 //Create
