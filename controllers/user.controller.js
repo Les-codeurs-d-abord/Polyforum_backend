@@ -94,6 +94,7 @@ exports.createCandidate = async (req, res) => {
       );
     console.log("Candidate profile created : ", candidateProfile.toJSON());
     // await MailServiSce.sendAccountCreated(user.email, password);
+    console.log(password);
 
     return res.status(201).send("Candidat créé avec succès");
   } catch (err) {
