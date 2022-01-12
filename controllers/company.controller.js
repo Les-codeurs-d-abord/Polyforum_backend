@@ -1,7 +1,6 @@
 const db = require("../models");
 const User = db.users;
 const CompanyProfile = db.company_profiles;
-const Op = db.Sequelize.Op;
 
 const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
@@ -78,7 +77,6 @@ exports.findById = async (req, res) => {
 exports.deleteById = async (req, res) => {
   const userId = req.params.userId;
   try {
-    // const company_profile = await CompanyProfile.findByPk(id)
     const profileDeleted = await CompanyProfile.destroy({
       where: { userId: userId },
     });
@@ -89,10 +87,10 @@ exports.deleteById = async (req, res) => {
 
     if (profileDeleted) {
       // Profile deleted
-      return res.status(200).send();
+      return res.status(200).send("Entreprise supprimée");
     } else {
       // Profile not found
-      return res.status(204).send();
+      return res.status(404).send("Pas d'entreprise trouvée");
     }
   } catch (err) {
     return res.status(500).send(err.message);
@@ -101,7 +99,7 @@ exports.deleteById = async (req, res) => {
 
 // Update a User by the id in the request
 exports.updateCompanyProfile = async (req, res) => {
-  const companyProfileId = req.params.companyProfileId;
+  const userId = req.params.userId;
   const updateContent = {
     companyName: req.body.companyName,
     phoneNumber: req.body.phoneNumber ? req.body.phoneNumber : null,
@@ -118,7 +116,7 @@ exports.updateCompanyProfile = async (req, res) => {
 
   //Check if this company profile exists
   const checkCompanyProfile = await CompanyProfile.findOne({
-    where: { id: companyProfileId },
+    where: { userId: userId },
   });
   if (!checkCompanyProfile) {
     return res.status(409).send("Ce profil d'entreprise n'existe pas");
@@ -126,49 +124,14 @@ exports.updateCompanyProfile = async (req, res) => {
 
   try {
     await CompanyProfile.update(updateContent, {
-      where: { id: companyProfileId },
+      where: { userid: userId },
     });
-    return res.send({ message: `Profil d'entreprise ${companyProfileId} mis à jour` });
+    return res.send(`Profil d'entreprise ${userId} mis à jour`);
   } catch (err) {
     return res.status(500).send(err.message);
   }
 };
 
-// Delete a User by the id in the request
-exports.delete = async (req, res) => {
-  const id = req.params.id;
-
-  try {
-    const deleteCount = await User.destroy({
-      where: { id: id },
-    });
-    if (deleteCount === 1) {
-      return res.send({ message: `Utilisateur ${id} supprimé` });
-    } else {
-      return res.send({
-        message: `Suppression impossible pour l'utilisateur ${id}`,
-      });
-    }
-  } catch (err) {
-    return res.status(500).send(err.message);
-  }
-};
-
-// Find all companies
-exports.findAllCompanies = async (req, res) => {
-  try {
-    const users = await User.findAll({
-      where: {
-        role: {
-          [Op.eq]: User.ROLES.COMPANY,
-        },
-      },
-    });
-    return res.send(users);
-  } catch (err) {
-    return res.status(500).send(err.message);
-  }
-};
 
 exports.companyList = async (req, res) => {
   try {
