@@ -10,7 +10,7 @@ const bcrypt = require('bcrypt');
 exports.getToken = async (req, res) => {
   const { email, password } = req.body;
 
-  console.log("GeToken: " + email);
+  console.log("GetToken: " + email + "pwd: " + password);
 
   if (!email || !password) {
     return res.status(401).send("Email or password empty.");
@@ -30,10 +30,12 @@ exports.getToken = async (req, res) => {
 
           var payload = {
             email: user.email,
+            role: user.role,
+            id: user.id,
           };
 
           res.status(200).json({
-            email: user.email,
+            payload,
             token: jwt.sign(
               payload,
               process.env.JWT_KEY,
