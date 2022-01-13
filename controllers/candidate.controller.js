@@ -81,7 +81,7 @@ exports.findById = async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ["id", "email"],
+          attributes: ["id", "email", "role"],
         },
       ],
     });

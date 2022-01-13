@@ -8,16 +8,16 @@ module.exports = (app) => {
   router.post("/", cors, candidateController.createCandidate);
 
   // Retrieve all candidates
-  router.get("/", candidateController.candidateList);
+  router.get("/", cors, candidateController.candidateList);
 
   // Retrieve a single candidate with id
-  router.get("/:userId", candidateController.findById);
+  router.get("/:userId", cors, candidateController.findById);
 
   // Delete a single candidate with id
-  router.delete("/:userId", candidateController.deleteById);
+  router.delete("/:userId", cors, candidateController.deleteById);
 
   // Update a candidate profile with id
-  router.put("/:userId", candidateController.updateCandidateProfile)
+  router.put("/:userId", cors, candidateController.updateCandidateProfile)
 
   app.use("/api/candidates", router);
 };
