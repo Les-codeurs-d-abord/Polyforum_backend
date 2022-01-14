@@ -49,9 +49,40 @@ exports.createAdmin = async (req, res) => {
       User.ROLES.ADMIN
     );
     console.log("Admin created : ", user.toJSON());
+    console.log("Mot de passe de l'admin : ", password);
 
     return res.status(201).send("Admin créé avec succès");
   } catch (err) {
     return res.status(500).send(err.message);
   }
 };
+
+// Find user by id
+exports.findById = async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const user = await User.findOne({
+      where: { id: userId },
+      attributes: { exclude: ["password"] },
+    });
+    if (!user) {
+      return res.status(404).send("Ce user n'existe pas");
+    }
+    return res.send(user.toJSON());
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
+
+// Find all admins
+exports.findAdmins = async (req, res) => {
+  try {
+    const admins = await User.findAll({
+      where: { role: User.ROLES.ADMIN },
+      attributes: { exclude: ["password"] },
+    });
+    return res.send(admins);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+}
