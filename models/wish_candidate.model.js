@@ -13,8 +13,11 @@ module.exports = (sequelize, Sequelize) => {
           model: 'offers',
           key: 'id',
         }
+      },
+      rank: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
       }
-    });
-  
+  });
     return wish_candidate;
   };
