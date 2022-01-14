@@ -6,5 +6,7 @@ module.exports = (app) => {
   // Update a User email
   router.put("/:userId", users.update);
 
+  router.post("/admins", users.createAdmin);
+
   app.use("/api/users", router);
 };

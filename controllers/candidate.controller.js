@@ -1,6 +1,9 @@
 const db = require("../models");
 const User = db.users;
 const CandidateProfile = db.candidate_profiles;
+const CandidateLink = db.candidate_links;
+const CandidateTag = db.candidate_tags;
+const Tag = db.tags;
 
 const UserService = require("../services/user.service");
 const CandidateProfileService = require("../services/candidate_profile.service");
@@ -140,7 +143,7 @@ exports.updateCandidateProfile = async (req, res) => {
     where: { userId: userId },
   });
   if (!checkCandidateProfile) {
-    return res.status(409).send("Ce profil d'entreprise n'existe pas");
+    return res.status(409).send("Ce profil de candidat n'existe pas");
   }
 
   try {
@@ -153,4 +156,167 @@ exports.updateCandidateProfile = async (req, res) => {
   }
 };
 
+exports.addLink = async (req, res) => {
+  const userId = req.params.userId;
+  const label = req.body.label;
 
+  if (!label) {
+    return res.status(400).send("Le lien est manquant");
+  }
+
+  //Check if this candidate profile exists
+  const checkCandidateProfile = await CandidateProfile.findOne({
+    where: { userId: userId },
+  });
+  if (!checkCandidateProfile) {
+    return res.status(409).send("Ce profil de candidat n'existe pas");
+  }
+
+  try {
+    const linkData = {
+      label: label,
+      candidateProfileId: checkCandidateProfile.id,
+    };
+    await CandidateLink.create(linkData);
+    res.send("Lien de candidat ajouté");
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+exports.linksList = async (req, res) => {
+  const userId = req.params.userId;
+
+  //Check if this candidate profile exists
+  const checkCandidateProfile = await CandidateProfile.findOne({
+    where: { userId: userId },
+  });
+  if (!checkCandidateProfile) {
+    return res.status(409).send("Ce profil de candidat n'existe pas");
+  }
+
+  try {
+    const candidate_links = await CandidateLink.findAll({
+      where: { candidateProfileId: checkCandidateProfile.id },
+    });
+    return res.send(candidate_links);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
+
+// Delete a single candidate link with an id
+exports.deleteLinkById = async (req, res) => {
+  const linkId = req.params.linkId;
+
+  try {
+    const linkDeleted = await CandidateLink.destroy({
+      where: { id: linkId },
+    });
+
+    if (linkDeleted) {
+      // Link deleted
+      return res.status(200).send("Lien de candidat supprimé");
+    } else {
+      // Link not found
+      return res.status(404).send("Pas de lien de candidat trouvé");
+    }
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
+
+exports.addTag = async (req, res) => {
+  const userId = req.params.userId;
+  const tagLabel = req.body.label;
+
+  if (!tagLabel) {
+    return res.status(400).send("Le tag est manquant");
+  }
+
+  //Check if this candidate profile exists
+  const checkCandidateProfile = await CandidateProfile.findOne({
+    where: { userId: userId },
+  });
+  if (!checkCandidateProfile) {
+    return res.status(409).send("Ce profil de candidat n'existe pas");
+  }
+
+  //Check if this tag exists
+  let tag = await Tag.findOne({
+    where: { label: tagLabel },
+  });
+
+  try {
+    // If this tag doesn't exist, create it
+    if (!tag) {
+      tag = await Tag.create({ label: tagLabel });
+    }
+
+    // Check if the candidate already has this tag
+    let checkAlreadyHasTag = await CandidateTag.findOne({
+      where: { candidateProfileId: checkCandidateProfile.id, tagId: tag.id },
+    });
+    if (checkAlreadyHasTag) {
+      return res.status(409).send("Ce candidat a déjà ce tag");
+    }
+
+    const tagData = {
+      tagId: tag.id,
+      candidateProfileId: checkCandidateProfile.id,
+    };
+    await CandidateTag.create(tagData);
+    res.send("Tag de candidat ajouté");
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+exports.tagsList = async (req, res) => {
+  const userId = req.params.userId;
+
+  //Check if this candidate profile exists
+  const checkCandidateProfile = await CandidateProfile.findOne({
+    where: { userId: userId },
+  });
+  if (!checkCandidateProfile) {
+    return res.status(409).send("Ce profil de candidat n'existe pas");
+  }
+
+  try {
+    const candidate_tags = await CandidateTag.findAll({
+      where: { candidateProfileId: checkCandidateProfile.id },
+      include: [
+        {
+          model: Tag,
+          attributes: ["id", "label"],
+        },
+      ],
+      attributes: { exclude: ["candidateProfileId", "tagId"] },
+    });
+    return res.send(candidate_tags);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
+
+// Delete a single candidate link with an id
+exports.deleteTagById = async (req, res) => {
+  const candidateTagId = req.params.candidateTagId;
+
+  try {
+    const tagDeleted = await CandidateTag.destroy({
+      where: { id: candidateTagId },
+    });
+
+    if (tagDeleted) {
+      // Link deleted
+      return res.status(200).send("Tag de candidat supprimé");
+    } else {
+      // Link not found
+      return res.status(404).send("Pas de tag de candidat trouvé");
+    }
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
