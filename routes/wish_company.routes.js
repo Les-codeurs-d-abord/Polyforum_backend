@@ -6,12 +6,12 @@ module.exports = (app) => {
     const router = require("express").Router();
 
     // Update the rank of a wish
-    router.put("/:wishId", cors, wishController.update);
+    router.put("/:companyId", cors, wishController.update);
 
     // Get all the wishes from a companyId
     router.get("/:companyId", cors, wishController.findAllByCompanyId);
 
-    // Create a wish
+    // Add a wish to a company
     router.post("", cors, wishController.createWishCompany);
 
     // Delete a single wish with id
