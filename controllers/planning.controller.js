@@ -16,17 +16,17 @@ exports.generationPlanning = async (req, res) => {
     // CompanyService.createCompanyProfile(7, 'Polycopie');
     // CompanyService.createCompanyProfile(8, "L'entreprise");
 
-    const offer = {
-        companyId: 6,
-        name: 'Alternance java',
-        description: 'blablabla',
-        email: 'company1@gmail.com',
-        phoneNumber: '01.70.67.23.12',
-        address: '71, Rue de la Pompe 78200 MANTES-LA-JOLIE',
-      };
+    // const offer = {
+    //     companyId: 6,
+    //     name: 'Alternance java',
+    //     description: 'blablabla',
+    //     email: 'company1@gmail.com',
+    //     phoneNumber: '01.70.67.23.12',
+    //     address: '71, Rue de la Pompe 78200 MANTES-LA-JOLIE',
+    //   };
     
-      Offers.create(offer)
+      // Offers.create(offer)
 
     PlanningService.createPlanning();
-    return res.send(json);
+    return res.send("ok");
 }
