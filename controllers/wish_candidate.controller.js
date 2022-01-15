@@ -39,13 +39,32 @@ exports.update = async (req, res) => {
     }
   };
 
-  exports.findAllByCandidateId = async (req, body) => {
+  exports.findAllByCandidateId = async (req, res) => {
     const candidateId = req.params.candidateId;
+    
+    if (!(candidateId)) {
+      return res.status(400).send("All input is required");
+    }
 
+    try {
+      const wishesFromCandidate = await Wish_CandidateService.findAllByCandidateId(candidateId);
+      return res.send(wishesFromCandidate);
+    } catch (err) {
+      return res.status(500).send(err.message);
+    }
+
+
+/*
+      const checkOfferTag = await Offer_Tags.findOne({
+        where: {
+          id: req.query.tag
+        },
+      });
+*/
   };
 
 
-  exports.deleteById = async (req, body) => {
+  exports.deleteById = async (req, res) => {
     const wishId = req.params.wishId;
 
     try {
