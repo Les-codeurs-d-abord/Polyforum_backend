@@ -31,6 +31,8 @@ db.candidate_links = require("./candidate_link.model.js")(sequelize, Sequelize);
 db.company_links = require("./company_link.model.js")(sequelize, Sequelize);
 db.wish_candidate = require("./wish_candidate.model.js")(sequelize, Sequelize);
 db.wish_company = require("./wish_company.model")(sequelize, Sequelize);
+db.planning = require("./planning.model")(sequelize, Sequelize);
+db.slot = require("./slot.model")(sequelize, Sequelize);
 
 
 // Relations / Associations
