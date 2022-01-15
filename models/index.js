@@ -44,6 +44,7 @@ db.candidate_links.belongsTo(db.candidate_profiles);
 
 db.tags.hasMany(db.candidate_tags);
 db.candidate_tags.belongsTo(db.tags);
+db.candidate_profiles.hasMany(db.candidate_tags);
 
 db.offers.hasMany(db.offer_tags);
 db.offer_tags.belongsTo(db.offers);
