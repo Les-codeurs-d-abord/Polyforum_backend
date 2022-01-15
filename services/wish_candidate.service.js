@@ -1,14 +1,6 @@
 const db = require("../models");
 const Wish_Candidate = db.wish_candidate;
 
-exports.createWishCandidate = async (candidateId, offerId) => {
-    const wishData = {
-        candidateId: candidateId,
-        offerId: offerId
-    };
-    const wish = await Wish_Candidate.create(wishData);
-    return wish;
-}
 
 exports.update = async (wishId, rank) => {
 

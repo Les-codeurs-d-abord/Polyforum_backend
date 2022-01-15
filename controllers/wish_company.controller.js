@@ -1,22 +1,26 @@
 const db = require("../models");
-const Wish_Candidate = db.wish_candidate;
-const Wish_CandidateService = require("../services/wish_candidate.service");
+const Wish_Company = db.wish_company;
+const Wish_CompanyService = require("../services/wish_company.service");
 
 
-exports.createWishCandidate = async (req, res) => {
-    const { rank, candidateId, offerId } = req.body;
+exports.createWishCompany = async (req, res) => {
+    const { rank, companyId, candidateId } = req.body;
+    console.log(rank);
+    console.log(companyId);
+    console.log(candidateId);
 
-    if (!(candidateId && offerId && rank)) {
+    if (!(companyId && candidateId && rank)) {
         return res.status(400).send("All input is required");
     }
 
-    const wishCandidate = {
+    const wishCompany = {
+        companyId: companyId,
         candidateId: candidateId,
-        offerId: offerId,
         rank: rank
     };
 
-    Wish_Candidate.create(wishCandidate)
+
+    Wish_Company.create(wishCompany)
     .then((value) => res.status(201).json({ value }))
     .catch(error => res.status(400).json({ error })
     );
@@ -32,23 +36,23 @@ exports.update = async (req, res) => {
     }
 
     try {
-      newRank = await Wish_CandidateService.update(wishId, rank);
+      newRank = await Wish_CompanyService.update(wishId, rank);
       return res.send(`Voeux ${wishId} mis à jour avec le nouveau rang ${newRank}`);
     } catch (err) {
       return res.status(500).send(err.message);
     }
   };
 
-  exports.findAllByCandidateId = async (req, res) => {
-    const candidateId = req.params.candidateId;
+  exports.findAllByCompanyId = async (req, res) => {
+    const companyId = req.params.companyId;
     
-    if (!(candidateId)) {
+    if (!(companyId)) {
       return res.status(400).send("All input is required");
     }
 
     try {
-      const wishesFromCandidate = await Wish_CandidateService.findAllByCandidateId(candidateId);
-      return res.send(wishesFromCandidate);
+      const wishesFromCompany = await Wish_CompanyService.findAllByCompanyId(companyId);
+      return res.send(wishesFromCompany);
     } catch (err) {
       return res.status(500).send(err.message);
     }
@@ -59,7 +63,7 @@ exports.update = async (req, res) => {
     const wishId = req.params.wishId;
 
     try {
-        const wishDeleted = await Wish_Candidate.destroy({
+        const wishDeleted = await Wish_Company.destroy({
           where: { id: wishId },
         });
     

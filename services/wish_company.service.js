@@ -1,11 +1,26 @@
 const db = require("../models");
 const Wish_Company = db.wish_company;
 
-exports.createWishCompany = async (candidateId, companyId) => {
-    const wishData = {
-        candidateId: candidateId,
-        companyId: companyId
-    };
-    const wish = await Wish_Company.create(wishData);
-    return wish; 
+exports.update = async (wishId, rank) => {
+
+    try {
+        await Wish_Company.update(
+          { rank: rank },
+          { where: { id: wishId } }
+        );
+        return rank;
+      } catch (err) {
+        throw err;
+      }
+}
+
+exports.findAllByCompanyId = async (companyId) => {
+    try {
+        const list = await Wish_Company.findAll(
+            { where: { companyId: companyId } }
+        );
+        return list;
+      } catch (err) {
+        throw err;
+      }
 }
