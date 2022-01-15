@@ -67,6 +67,16 @@ exports.candidateList = async (req, res) => {
           model: User,
           attributes: ["id", "email"],
         },
+        { model: CandidateLink },
+        {
+          model: CandidateTag,
+          include: [
+            {
+              model: Tag,
+              attributes: ["id", "label"],
+            },
+          ],
+        },
       ],
       attributes: ["firstName", "lastName"],
     });
@@ -87,6 +97,16 @@ exports.findById = async (req, res) => {
         {
           model: User,
           attributes: ["id", "email", "role"],
+        },
+        { model: CandidateLink },
+        {
+          model: CandidateTag,
+          include: [
+            {
+              model: Tag,
+              attributes: ["id", "label"],
+            },
+          ],
         },
       ],
     });
