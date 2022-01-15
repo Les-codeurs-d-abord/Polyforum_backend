@@ -45,6 +45,8 @@ exports.createCompany = async (req, res) => {
     // TODO Décommenter pour l'envoi des mails
     // await MailService.sendAccountCreated(user.email, password);
 
+    console.log(password);
+
     return res.status(201).send("Entreprise créée avec succès");
   } catch (err) {
     return res.status(500).send(err.message);
@@ -60,7 +62,7 @@ exports.findById = async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ["id", "email"],
+          attributes: ["id", "email", "role"],
         },
       ],
     });
