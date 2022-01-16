@@ -77,8 +77,8 @@ exports.createPlanning = async () => {
                     const candidate = allCandidates[w2];
                     const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[w], planningCandidate[w2], nbSlotPerUser);
                     if (indexNewSlot >= 0) {
-                        planningCompany[w] = allCandidates[w2].id;
-                        planningCandidate[w2] = allCompanies[w].id;
+                        planningCompany[w][indexNewSlot] = candidate.userId;
+                        planningCandidate[w2][indexNewSlot] = company.userId;
                     }
                 }
         }
@@ -108,14 +108,46 @@ exports.createPlanning = async () => {
         for (var s = 0; s < nbSlotPerUser; s++) {
 
             if (planningCompany[w][s]) {
-                console.log('il y a un rdv')
+                const slotValues = {
+                    userPlanning: allCompanies[w].userId,
+                    userMet: planningCompany[w][s],
+                    period: convertIndexAsPeriod(s)
+                };
+                const slot = await Slot.create(slotValues);
             } else {
                 console.log('pas de rendez vous')
             }
-            //const slot = await Slot.createSlot();
         }
-
     }
+
+
+
+    //Pareil pour les candidats
+
+    for (var w = 0; w < allCandidates.length; w++) {
+
+    //Construction du planning...
+    const planningValues = {
+        userPlanning: allCandidates[w].userId
+    };
+    const planning = await Planning.create(planningValues);
+
+    // Création des slots associés
+    for (var s = 0; s < nbSlotPerUser; s++) {
+
+        if (planningCandidate[w][s]) {
+            const slotValues = {
+                userPlanning: allCandidates[w].userId,
+                userMet: planningCandidate[w][s],
+                period: convertIndexAsPeriod(s)
+            };
+            const slot = await Slot.create(slotValues);
+        } else {
+            console.log('pas de rendez vous')
+        }
+    }
+}
+
 
 }
 
@@ -128,4 +160,17 @@ function checkFirstIndexOfAvailability(planningCompany, planningCandidate,nbSlot
         }
     }
     return -1;
+}
+
+function convertIndexAsPeriod(index) {
+    switch (index) {
+        case 0: return '14h - 14h30'
+        case 1: return '14h30 - 15h'
+        case 2: return '15h - 15h30'
+        case 3: return '15h30 - 16h'
+        case 4: return '16h - 16h30'
+        case 5: return '16h30 - 17h'
+        case 6: return '17h - 17h30'
+        case 7: return '17h30 - 18h'
+    }
 }
