@@ -7,6 +7,9 @@ module.exports = (app) => {
   // Update a User email
   router.put("/:userId", cors, users.update);
 
+    // Update a User password
+    router.put("/:userId/password", cors, users.changePassword);
+
   // Get all admins
   router.get("/admins", cors, users.findAdmins);
 
