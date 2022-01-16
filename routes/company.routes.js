@@ -8,16 +8,16 @@ module.exports = (app) => {
   router.post("/", cors, companyController.createCompany);
 
   // Retrieve all companies
-  router.get("/", companyController.companyList);
+  router.get("/", cors, companyController.companyList);
 
   // Retrieve a single company with id
-  router.get("/:userId", companyController.findById);
+  router.get("/:userId", cors, companyController.findById);
 
   // Delete a single company with id
-  router.delete("/:userId", companyController.deleteById);
+  router.delete("/:userId", cors, companyController.deleteById);
 
   // Update a company profile with id
-  router.put("/:userId", companyController.updateCompanyProfile)
+  router.put("/:userId", cors, companyController.updateCompanyProfile)
 
   app.use("/api/companies", router);
 };

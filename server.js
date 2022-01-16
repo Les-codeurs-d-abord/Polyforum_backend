@@ -26,6 +26,8 @@ require("./routes/login.routes")(app);
 require("./routes/offer.routes")(app);
 require("./routes/tag.routes")(app);
 require("./routes/res.routes")(app);
+require("./routes/wish_candidate.routes")(app);
+require("./routes/wish_company.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;

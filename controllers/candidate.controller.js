@@ -48,6 +48,7 @@ exports.createCandidate = async (req, res) => {
         lastName
       );
     console.log("Candidate profile created : ", candidateProfile.toJSON());
+    console.log(password);
     // TODO Décommenter pour l'envoi des mails
     // await MailService.sendAccountCreated(user.email, password);
 
@@ -66,6 +67,16 @@ exports.candidateList = async (req, res) => {
           model: User,
           attributes: ["id", "email"],
         },
+        { model: CandidateLink },
+        {
+          model: CandidateTag,
+          include: [
+            {
+              model: Tag,
+              attributes: ["id", "label"],
+            },
+          ],
+        },
       ],
       attributes: ["firstName", "lastName"],
     });
@@ -78,6 +89,7 @@ exports.candidateList = async (req, res) => {
 // Find a single candidate with an id
 exports.findById = async (req, res) => {
   const userId = req.params.userId;
+
   try {
     const candidate_profile = await CandidateProfile.findAll({
       where: { userId: userId },
@@ -85,6 +97,16 @@ exports.findById = async (req, res) => {
         {
           model: User,
           attributes: ["id", "email", "role"],
+        },
+        { model: CandidateLink },
+        {
+          model: CandidateTag,
+          include: [
+            {
+              model: Tag,
+              attributes: ["id", "label"],
+            },
+          ],
         },
       ],
     });
