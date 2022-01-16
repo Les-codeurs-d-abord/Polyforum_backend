@@ -28,6 +28,8 @@ exports.createPlanning = async () => {
     let mapCompanyIndex = new Map();
     let mapCandidateIndex = new Map();
 
+    let mapOffersCompany = new Map();
+
     const nbSlotPerUser = 8;
     let planningCandidate = new Array(allCandidates.length);
     let planningCompany = new Array(allCompanies.length);
@@ -63,6 +65,7 @@ exports.createPlanning = async () => {
     let mapOfferCompany = new Map();
     for (var w = 0; w < wishesCandidates.length; w++) {
         const offer = await Offer.findByPk(wishesCandidates[w].offerId);
+        mapOffersCompany.set(offer.id, offer.dataValues.companyProfileId)
         const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateId);
         const indexCompany = mapCompanyIndex.get(offer.dataValues.companyProfileId);
         mapOfferCompany.set(wishesCandidates[w].offerId, offer.dataValues.companyProfileId)
@@ -83,6 +86,36 @@ exports.createPlanning = async () => {
                 }
         }
     }
+
+    //On cherche les voeux des entreprises
+    for (var w = 0; w < wishesCompanies.length; w++) {
+        const indexCandidate = mapCandidateIndex.get(wishesCompanies[w].candidateId);
+        const indexCompany = mapCompanyIndex.get(wishesCompanies[w].companyId);
+        
+        if (matrixWishes[indexCompany][indexCandidate] == 2) {
+            const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[indexCompany], planningCandidate[indexCandidate], nbSlotPerUser);
+            if (indexNewSlot >= 0) {
+                planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
+                planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
+            }
+        }
+
+    }
+
+        //On cherche les voeux des candidats
+        for (var w = 0; w < wishesCandidates.length; w++) {
+            const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateId);
+            const indexCompany = mapCompanyIndex.get(mapOffersCompany.get(wishesCandidates[w].offerId));
+            
+            if (matrixWishes[indexCompany][indexCandidate] == 1) {
+                const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[indexCompany], planningCandidate[indexCandidate], nbSlotPerUser);
+                if (indexNewSlot >= 0) {
+                    planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
+                    planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
+                }
+            }
+        }
+
 
     // On efface les vielles valeurs de planning et de slot
     Planning.destroy({
@@ -114,39 +147,32 @@ exports.createPlanning = async () => {
                     period: convertIndexAsPeriod(s)
                 };
                 const slot = await Slot.create(slotValues);
-            } else {
-                console.log('pas de rendez vous')
             }
         }
     }
 
-
-
     //Pareil pour les candidats
-
     for (var w = 0; w < allCandidates.length; w++) {
 
-    //Construction du planning...
-    const planningValues = {
-        userPlanning: allCandidates[w].userId
-    };
-    const planning = await Planning.create(planningValues);
+        //Construction du planning...
+        const planningValues = {
+            userPlanning: allCandidates[w].userId
+        };
+        const planning = await Planning.create(planningValues);
 
-    // Création des slots associés
-    for (var s = 0; s < nbSlotPerUser; s++) {
+        // Création des slots associés
+        for (var s = 0; s < nbSlotPerUser; s++) {
 
-        if (planningCandidate[w][s]) {
-            const slotValues = {
-                userPlanning: allCandidates[w].userId,
-                userMet: planningCandidate[w][s],
-                period: convertIndexAsPeriod(s)
-            };
-            const slot = await Slot.create(slotValues);
-        } else {
-            console.log('pas de rendez vous')
+            if (planningCandidate[w][s]) {
+                const slotValues = {
+                    userPlanning: allCandidates[w].userId,
+                    userMet: planningCandidate[w][s],
+                    period: convertIndexAsPeriod(s)
+                };
+                const slot = await Slot.create(slotValues);
+            }
         }
     }
-}
 
 
 }
