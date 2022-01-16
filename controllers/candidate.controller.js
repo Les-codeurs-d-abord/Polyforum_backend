@@ -9,6 +9,10 @@ const UserService = require("../services/user.service");
 const CandidateProfileService = require("../services/candidate_profile.service");
 const MailService = require("../services/mail.service");
 
+const path = require("path");
+const multer = require("multer");
+const fs = require("fs");
+
 // Create a candidate
 exports.createCandidate = async (req, res) => {
   const email = req.body.email;
@@ -111,7 +115,7 @@ exports.findById = async (req, res) => {
       ],
     });
     if (!candidate_profile.length) {
-      return res.status(404).send("Pas d'entreprise trouvée");
+      return res.status(404).send("Pas de candidat trouvée");
     }
     return res.send(candidate_profile[0]);
   } catch (err) {
@@ -176,6 +180,183 @@ exports.updateCandidateProfile = async (req, res) => {
   } catch (err) {
     return res.status(500).send(err.message);
   }
+};
+
+exports.uploadLogo = async (req, res) => {
+  const userId = req.params.userId;
+
+  const checkCandidateProfile = await CandidateProfile.findOne({
+    where: { userId: userId },
+  });
+
+  if(!checkCandidateProfile) {
+    return res.status(404).send("Ce candidat n'existe pas")
+  }
+
+  let deleteOldLogo = false;
+  let extension = "";
+
+  var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      // Uploads is the Upload_folder_name
+      cb(null, "data/candidateLogos");
+    },
+    filename: function (req, file, cb) {
+      extension = file.originalname.split(".")[1];
+      deleteOldLogo = checkCandidateProfile.logo
+        ? extension != checkCandidateProfile.logo.split(".")[1]
+        : false;
+      cb(null, "candidateLogo_" + userId + "." + extension);
+    },
+  });
+
+  // Define the maximum size for uploading
+  // picture i.e. 4 MB. it is optional
+  const maxSize = 4 * 1000 * 1000;
+
+  var upload = multer({
+    storage: storage,
+    limits: { fileSize: maxSize },
+    fileFilter: function (req, file, cb) {
+      // Set the filetypes, it is optional
+      var filetypes = /jpeg|jpg|png/;
+      var mimetype = filetypes.test(file.mimetype);
+
+      var extname = filetypes.test(
+        path.extname(file.originalname).toLowerCase()
+      );
+
+      if (mimetype && extname) {
+        return cb(null, true);
+      }
+
+      cb(
+        "Error: File upload only supports the " +
+          "following filetypes - " +
+          filetypes
+      );
+    },
+
+    // logo is the name of file attribute
+  }).single("logo");
+
+  upload(req, res, function (err) {
+    if (err) {
+      // ERROR occured (here it can be occured due
+      // to uploading image of size greater than
+      // 1MB or uploading different file type)
+      res.status(400).send(err);
+    } else {
+      // update logo in candidate profile
+      CandidateProfile.update(
+        { logo: "candidateLogo_" + userId + "." + extension },
+        {
+          where: { userId: userId },
+        }
+      );
+      if (deleteOldLogo) {
+        fs.unlink("data/candidateLogos/" + checkCandidateProfile.logo, (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+
+          //file removed
+        });
+      }
+      // SUCCESS, image successfully uploaded
+      res.send("Success, Image uploaded!");
+    }
+  });
+};
+
+exports.uploadCV = async (req, res) => {
+  const userId = req.params.userId;
+
+  const checkCandidateProfile = await CandidateProfile.findOne({
+    where: { userId: userId },
+  });
+
+  if(!checkCandidateProfile) {
+    return res.status(404).send("Ce candidat n'existe pas")
+  }
+
+  let deleteOldCV = false;
+  let extension = "";
+
+  var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      // Uploads is the Upload_folder_name
+      cb(null, "data/candidateCV");
+    },
+    filename: function (req, file, cb) {
+      extension = file.originalname.split(".")[1];
+      console.log(extension)
+      deleteOldLogo = checkCandidateProfile.logo
+        ? extension != checkCandidateProfile.logo.split(".")[1]
+        : false;
+      cb(null, "candidateCV_" + userId + "." + extension);
+    },
+  });
+
+  // Define the maximum size for uploading
+  // picture i.e. 4 MB. it is optional
+  const maxSize = 4 * 1000 * 1000;
+
+  var upload = multer({
+    storage: storage,
+    limits: { fileSize: maxSize },
+    fileFilter: function (req, file, cb) {
+      // Set the filetypes, it is optional
+      var filetypes = /pdf|doc|docx/;
+      var mimetype = filetypes.test(file.mimetype);
+
+      var extname = filetypes.test(
+        path.extname(file.originalname).toLowerCase()
+      );
+
+      if (mimetype && extname) {
+        return cb(null, true);
+      }
+
+      cb(
+        "Error: File upload only supports the " +
+          "following filetypes - " +
+          filetypes
+      );
+    },
+
+    // logo is the name of file attribute
+  }).single("cv");
+
+  upload(req, res, function (err) {
+    if (err) {
+      // ERROR occured (here it can be occured due
+      // to uploading image of size greater than
+      // 1MB or uploading different file type)
+      res.status(400).send(err);
+    } else {
+      // update cv in candidate profile
+      CandidateProfile.update(
+        { cv: "candidateCV_" + userId + "." + extension },
+        {
+          where: { userId: userId },
+        }
+      );
+      if (deleteOldLogo) {
+        fs.unlink("data/candidateCV/" + checkCandidateProfile.cv, (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+
+          //file removed
+        });
+      }
+      // SUCCESS, CV successfully uploaded
+      res.send("Success, CV uploaded!");
+    }
+  });
 };
 
 exports.addLink = async (req, res) => {

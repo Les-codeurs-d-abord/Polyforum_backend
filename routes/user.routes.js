@@ -7,6 +7,12 @@ module.exports = (app) => {
   // Update a User email
   router.put("/:userId", cors, users.update);
 
+  // Update a User password
+  router.put("/:userId/changePassword", cors, users.changePassword);
+
+  // Update a User password
+  router.put("/:userId/resetPassword", cors, users.resetPassword);
+
   // Get all admins
   router.get("/admins", cors, users.findAdmins);
 
