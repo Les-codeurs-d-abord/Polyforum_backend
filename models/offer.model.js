@@ -16,12 +16,8 @@ module.exports = (sequelize, Sequelize) => {
         notEmpty: true
       }
     },
-    offerLink: {
+    offerFile: {
       type: Sequelize.STRING(255),
-      allowNull: false,
-      validate: {
-        notEmpty: true
-      }
     },
     phoneNumber: {
       type: Sequelize.STRING(255),

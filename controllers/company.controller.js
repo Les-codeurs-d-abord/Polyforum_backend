@@ -6,6 +6,10 @@ const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
 const MailService = require("../services/mail.service");
 
+const path = require("path");
+const multer = require("multer");
+const fs = require("fs");
+
 // Create a company
 exports.createCompany = async (req, res) => {
   const email = req.body.email;
@@ -150,4 +154,90 @@ exports.companyList = async (req, res) => {
   } catch (err) {
     return res.status(500).send(err.message);
   }
+};
+
+exports.uploadLogo = async (req, res) => {
+  const userId = req.params.userId;
+
+  const checkCompanyProfile = await CompanyProfile.findOne({
+    where: { userId: userId },
+  });
+
+  if(!checkCompanyProfile) {
+    return res.status(404).send("Cette entreprise n'existe pas")
+  }
+
+  let deleteOldLogo = false;
+  let extension = "";
+
+  var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      // Uploads is the Upload_folder_name
+      cb(null, "data/companyLogos");
+    },
+    filename: function (req, file, cb) {
+      extension = file.originalname.split(".")[1];
+      deleteOldLogo = checkCompanyProfile.logo
+        ? extension != checkCompanyProfile.logo.split(".")[1]
+        : false;
+      cb(null, "companyLogo_" + userId + "." + extension);
+    },
+  });
+
+  // Define the maximum size for uploading
+  // picture i.e. 4 MB. it is optional
+  const maxSize = 4 * 1000 * 1000;
+
+  var upload = multer({
+    storage: storage,
+    limits: { fileSize: maxSize },
+    fileFilter: function (req, file, cb) {
+      // Set the filetypes, it is optional
+      var filetypes = /jpeg|jpg|png/;
+      var mimetype = filetypes.test(file.mimetype);
+
+      var extname = filetypes.test(
+        path.extname(file.originalname).toLowerCase()
+      );
+
+      if (mimetype && extname) {
+        return cb(null, true);
+      }
+
+      cb(
+        "Error: File upload only supports the " +
+          "following filetypes - " +
+          filetypes
+      );
+    },
+
+    // logo is the name of file attribute
+  }).single("logo");
+
+  upload(req, res, function (err) {
+    if (err) {
+      // ERROR occured (here it can be occured due
+      // to uploading image of size greater than
+      // 1MB or uploading different file type)
+      res.status(400).send(err);
+    } else {
+      // update logo in company profile
+      CompanyProfile.update(
+        { logo: "companyLogo_" + userId + "." + extension },
+        {
+          where: { userId: userId },
+        }
+      );
+      if (deleteOldLogo) {
+        fs.unlink("data/companyLogos/" + checkCompanyProfile.logo, (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+        });
+      }
+      // SUCCESS, image successfully uploaded
+      res.send("Success, Image uploaded!");
+    }
+  });
 };

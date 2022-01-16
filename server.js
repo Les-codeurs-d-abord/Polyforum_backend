@@ -14,11 +14,6 @@ db.sequelize.sync({ force: false, alter: false }).then(() => {
   console.log("Drop and re-sync db.");
 });
 
-// simple route
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to les copains d'abord's application." });
-});
-
 require("./routes/user.routes")(app);
 require("./routes/company.routes")(app);
 require("./routes/candidate.routes")(app);
@@ -34,4 +29,3 @@ const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}.`);
 });
-

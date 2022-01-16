@@ -5,6 +5,7 @@ module.exports = app => {
 
   //offer
   router.post("", offer.createOffer);
+  router.post("/:offerId/upload", offer.upload);
   router.get("", cors, offer.getAllOffer);
 
   //offer_tags
