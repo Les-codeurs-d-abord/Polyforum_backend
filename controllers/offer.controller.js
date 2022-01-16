@@ -106,7 +106,7 @@ exports.upload = async (req, res) => {
       Offers.update(
         { offerFile: "offer_" + offerId + "." + extension },
         {
-          where: { offerId: offerId },
+          where: { id: offerId },
         }
       );
       if (deleteOldFile) {
