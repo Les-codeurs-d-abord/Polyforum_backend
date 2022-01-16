@@ -1,4 +1,5 @@
 const db = require("../models");
+const { Sequelize } = require("../models");
 const User = db.users;
 const CompanyProfile = db.company_profiles;
 
@@ -138,7 +139,6 @@ exports.updateCompanyProfile = async (req, res) => {
   }
 };
 
-
 exports.companyList = async (req, res) => {
   try {
     const company_profiles = await CompanyProfile.findAll({
@@ -148,7 +148,20 @@ exports.companyList = async (req, res) => {
           attributes: ["id", "email"],
         },
       ],
-      attributes: ["companyName", "logo"],
+      attributes: [
+        "companyName",
+        "logo",
+        [
+          // Note the wrapping parentheses in the call below!
+          Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM offers AS offer
+            WHERE
+                offer.companyProfileId = company_profile.id
+        )`),
+          "offersCount",
+        ],
+      ],
     });
     return res.send(company_profiles);
   } catch (err) {
@@ -163,8 +176,8 @@ exports.uploadLogo = async (req, res) => {
     where: { userId: userId },
   });
 
-  if(!checkCompanyProfile) {
-    return res.status(404).send("Cette entreprise n'existe pas")
+  if (!checkCompanyProfile) {
+    return res.status(404).send("Cette entreprise n'existe pas");
   }
 
   let deleteOldLogo = false;
