@@ -7,11 +7,11 @@ module.exports = (sequelize, Sequelize) => {
         key: 'id',
       }
     },
-    tagId: {
-      type: Sequelize.INTEGER,
-      references: {
-        model: 'tags',
-        key: 'id',
+    label: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+      validate: {
+        notEmpty: true
       }
     }
   });

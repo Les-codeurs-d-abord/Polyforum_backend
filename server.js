@@ -19,7 +19,6 @@ require("./routes/company.routes")(app);
 require("./routes/candidate.routes")(app);
 require("./routes/login.routes")(app);
 require("./routes/offer.routes")(app);
-require("./routes/tag.routes")(app);
 require("./routes/res.routes")(app);
 require("./routes/wish_candidate.routes")(app);
 require("./routes/wish_company.routes")(app);

@@ -72,15 +72,7 @@ exports.candidateList = async (req, res) => {
           attributes: ["id", "email"],
         },
         { model: CandidateLink },
-        {
-          model: CandidateTag,
-          include: [
-            {
-              model: Tag,
-              attributes: ["id", "label"],
-            },
-          ],
-        },
+        { model: CandidateTag },
       ],
       attributes: ["firstName", "lastName"],
     });
@@ -103,15 +95,7 @@ exports.findById = async (req, res) => {
           attributes: ["id", "email", "role"],
         },
         { model: CandidateLink },
-        {
-          model: CandidateTag,
-          include: [
-            {
-              model: Tag,
-              attributes: ["id", "label"],
-            },
-          ],
-        },
+        { model: CandidateTag },
       ],
     });
     if (!candidate_profile.length) {
@@ -150,18 +134,26 @@ exports.deleteById = async (req, res) => {
 // Update a User by the id in the request
 exports.updateCandidateProfile = async (req, res) => {
   const userId = req.params.userId;
+  const {
+    firstName,
+    lastName,
+    phoneNumber,
+    description,
+    address,
+    tagsList,
+    linksList,
+  } = req.body;
+
   const updateContent = {
-    candidateName: req.body.candidateName,
-    phoneNumber: req.body.phoneNumber ? req.body.phoneNumber : null,
-    description: req.body.description ? req.body.description : null,
+    firstName: firstName,
+    lastName: lastName,
+    phoneNumber: phoneNumber ? phoneNumber : null,
+    description: description ? description : null,
+    address: address ? address : null,
   };
 
-  if (!updateContent.candidateName) {
-    return res
-      .status(400)
-      .send(
-        "Au moins un champ manquant (raison sociale / téléphone / description)"
-      );
+  if (!(firstName && lastName)) {
+    return res.status(400).send("Au moins un champ manquant (nom, prénom)");
   }
 
   //Check if this candidate profile exists
@@ -176,7 +168,34 @@ exports.updateCandidateProfile = async (req, res) => {
     await CandidateProfile.update(updateContent, {
       where: { userId: userId },
     });
-    return res.send(`Profil d'entreprise ${userId} mis à jour`);
+
+    // Delete previous tags
+    await CandidateTag.destroy({
+      where: { candidateProfileId: checkCandidateProfile.id },
+    });
+
+    // Create new tags
+    for (let i = 0; i < tagsList.length; i++) {
+      await CandidateTag.create({
+        candidateProfileId: checkCandidateProfile.id,
+        label: tagsList[i],
+      });
+    }
+
+    // Delete previous links
+    await CandidateLink.destroy({
+      where: { candidateProfileId: checkCandidateProfile.id },
+    });
+
+    // Create new tags
+    for (let i = 0; i < linksList.length; i++) {
+      await CandidateLink.create({
+        candidateProfileId: checkCandidateProfile.id,
+        label: linksList[i],
+      });
+    }
+
+    return res.send(`Profil de candidat ${userId} mis à jour`);
   } catch (err) {
     return res.status(500).send(err.message);
   }
@@ -189,8 +208,8 @@ exports.uploadLogo = async (req, res) => {
     where: { userId: userId },
   });
 
-  if(!checkCandidateProfile) {
-    return res.status(404).send("Ce candidat n'existe pas")
+  if (!checkCandidateProfile) {
+    return res.status(404).send("Ce candidat n'existe pas");
   }
 
   let deleteOldLogo = false;
@@ -255,14 +274,17 @@ exports.uploadLogo = async (req, res) => {
         }
       );
       if (deleteOldLogo) {
-        fs.unlink("data/candidateLogos/" + checkCandidateProfile.logo, (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
+        fs.unlink(
+          "data/candidateLogos/" + checkCandidateProfile.logo,
+          (err) => {
+            if (err) {
+              console.error(err);
+              return;
+            }
 
-          //file removed
-        });
+            //file removed
+          }
+        );
       }
       // SUCCESS, image successfully uploaded
       res.send("Success, Image uploaded!");
@@ -277,8 +299,8 @@ exports.uploadCV = async (req, res) => {
     where: { userId: userId },
   });
 
-  if(!checkCandidateProfile) {
-    return res.status(404).send("Ce candidat n'existe pas")
+  if (!checkCandidateProfile) {
+    return res.status(404).send("Ce candidat n'existe pas");
   }
 
   let deleteOldCV = false;
@@ -291,7 +313,7 @@ exports.uploadCV = async (req, res) => {
     },
     filename: function (req, file, cb) {
       extension = file.originalname.split(".")[1];
-      console.log(extension)
+      console.log(extension);
       deleteOldLogo = checkCandidateProfile.logo
         ? extension != checkCandidateProfile.logo.split(".")[1]
         : false;
@@ -446,7 +468,7 @@ exports.addTag = async (req, res) => {
   }
 
   //Check if this tag exists
-  let tag = await Tag.findOne({
+  let tag = await CandidateTag.findOne({
     where: { label: tagLabel },
   });
 
@@ -489,13 +511,6 @@ exports.tagsList = async (req, res) => {
   try {
     const candidate_tags = await CandidateTag.findAll({
       where: { candidateProfileId: checkCandidateProfile.id },
-      include: [
-        {
-          model: Tag,
-          attributes: ["id", "label"],
-        },
-      ],
-      attributes: { exclude: ["candidateProfileId", "tagId"] },
     });
     return res.send(candidate_tags);
   } catch (err) {
