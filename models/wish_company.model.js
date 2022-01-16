@@ -13,6 +13,10 @@ module.exports = (sequelize, Sequelize) => {
                 model: 'candidate_profiles',
                 key: 'id',
             }
+        },
+        rank: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
         }
     });
   

@@ -15,18 +15,20 @@ exports.createOffer = async (req, res) => {
     return res.status(400).send("All input is required");
   }
 
+
   const offer = {
     companyProfileId: companyProfileId,
     name: name,
     description: description,
-    offerLink: offerLink,
     email: email,
     phoneNumber: phoneNumber,
     address: address,
+    offerLink: offerLink
   };
 
   Offers.create(offer)
-    .then((value) => res.status(201).json({ value }))
+    .then(
+      (value) => res.status(201).json({ value }))
     .catch(error => res.status(400).json({ error })
     );
 };
