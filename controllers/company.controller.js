@@ -2,6 +2,7 @@ const db = require("../models");
 const { Sequelize } = require("../models");
 const User = db.users;
 const CompanyProfile = db.company_profiles;
+const CompanyLink = db.company_links;
 
 const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
@@ -69,6 +70,8 @@ exports.findById = async (req, res) => {
           model: User,
           attributes: ["id", "email", "role"],
         },
+        { model: CompanyLink },
+
       ],
     });
     if (!company_profile.length) {
@@ -107,17 +110,25 @@ exports.deleteById = async (req, res) => {
 // Update a User by the id in the request
 exports.updateCompanyProfile = async (req, res) => {
   const userId = req.params.userId;
+  const {
+    companyName,
+    phoneNumber,
+    description,
+    address,
+    linksList,
+  } = req.body;
   const updateContent = {
-    companyName: req.body.companyName,
-    phoneNumber: req.body.phoneNumber ? req.body.phoneNumber : null,
-    description: req.body.description ? req.body.description : null,
+    companyName: companyName,
+    phoneNumber: phoneNumber ? phoneNumber : null,
+    description: description ? description : null,
+    address: address ? address : null
   };
 
-  if (!updateContent.companyName) {
+  if (!companyName) {
     return res
       .status(400)
       .send(
-        "Au moins un champ manquant (raison sociale / téléphone / description)"
+        "Au moins un champ manquant (raison sociale)"
       );
   }
 
@@ -133,6 +144,20 @@ exports.updateCompanyProfile = async (req, res) => {
     await CompanyProfile.update(updateContent, {
       where: { userid: userId },
     });
+
+    // Delete previous links
+    await CompanyLink.destroy({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+
+    // Create new tags
+    for (let i = 0; i < linksList.length; i++) {
+      await CompanyLink.create({
+        companyProfileId: checkCompanyProfile.id,
+        label: linksList[i],
+      });
+    }
+
     return res.send(`Profil d'entreprise ${userId} mis à jour`);
   } catch (err) {
     return res.status(500).send(err.message);
