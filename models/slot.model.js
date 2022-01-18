@@ -29,8 +29,7 @@ module.exports = (sequelize, Sequelize) => {
       },
       
       logo: {
-        type: Sequelize.BLOB('long'),
-        allowNull: true
+        type: Sequelize.STRING(255),
       },
 
       period: {
