@@ -27,7 +27,7 @@ require("./routes/offer.routes")(app);
 require("./routes/tag.routes")(app);
 require("./routes/res.routes")(app);
 require("./routes/planning.routes")(app);
-require("./routes/wish_candidate.route")(app);
+require("./routes/wish_candidate.routes")(app);
 require("./routes/wish_company.routes")(app);
 
 // set port, listen for requests

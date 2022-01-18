@@ -141,12 +141,26 @@ exports.createPlanning = async () => {
         for (var s = 0; s < nbSlotPerUser; s++) {
 
             if (planningCompany[w][s]) {
+                const company = allCompanies[w];
+                const candidate = allCandidates[mapCandidateIndex.get(planningCompany[w][s])];
+                const nameCandidate = candidate.firstName + candidate.lastName;
+
                 const slotValues = {
-                    userPlanning: allCompanies[w].userId,
+                    userPlanning: company.userId,
                     userMet: planningCompany[w][s],
-                    period: convertIndexAsPeriod(s)
+                    period: convertIndexAsPeriod(s),
+                    companyName: company.companyName,
+                    candidateName: nameCandidate,
+                    logo: company.logo
                 };
                 const slot = await Slot.create(slotValues);
+            }
+            else {
+                const slotValues = {
+                    userPlanning: allCompanies[w].userId,
+                    period: convertIndexAsPeriod(s)
+                };
+                const slot = await Slot.create(slotValues);               
             }
         }
     }
@@ -164,12 +178,26 @@ exports.createPlanning = async () => {
         for (var s = 0; s < nbSlotPerUser; s++) {
 
             if (planningCandidate[w][s]) {
+                const company = allCompanies[w];
+                const candidate = allCandidates[mapCandidateIndex.get(planningCompany[w][s])];
+                const nameCandidate = candidate.firstName + candidate.lastName;
+                
                 const slotValues = {
                     userPlanning: allCandidates[w].userId,
                     userMet: planningCandidate[w][s],
-                    period: convertIndexAsPeriod(s)
+                    period: convertIndexAsPeriod(s),
+                    companyName: company.companyName,
+                    candidateName: nameCandidate,
+                    logo: company.logo
                 };
                 const slot = await Slot.create(slotValues);
+            }
+            else {
+                const slotValues = {
+                    userPlanning: allCandidates[w].userId,
+                    period: convertIndexAsPeriod(s)
+                };
+                const slot = await Slot.create(slotValues);               
             }
         }
     }

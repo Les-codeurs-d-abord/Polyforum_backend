@@ -40,6 +40,7 @@ exports.createCandidate = async (req, res) => {
       email,
       User.ROLES.CANDIDATE
     );
+    console.log(password)
     console.log("Candidate created : ", user.toJSON());
     const candidateProfile =
       await CandidateProfileService.createCandidateProfile(
@@ -48,7 +49,7 @@ exports.createCandidate = async (req, res) => {
         lastName
       );
     console.log("Candidate profile created : ", candidateProfile.toJSON());
-    console.log(password);
+    console.log("Password ", password);
     // TODO Décommenter pour l'envoi des mails
     // await MailService.sendAccountCreated(user.email, password);
 

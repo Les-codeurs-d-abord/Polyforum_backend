@@ -1,32 +1,66 @@
 const db = require("../models");
-const Wish_Company = db.wish_company;
-const Wish_Candidate = db.wish_candidate;
-const Offers = db.offers;
-
+const Planning = db.planning;
+const Slot = db.slot;
+const CandidateProfile = db.candidate_profiles;
+const User = db.users;
 
 const PlanningService = require("../services/planning.service");
-const CompanyService = require("../services/company_profile.service");
-
-
-//const UserService = require("../services/user.service");
 
 exports.generationPlanning = async (req, res) => {
-
-    // CompanyService.createCompanyProfile(6, 'Clyde & Co');
-    // CompanyService.createCompanyProfile(7, 'Polycopie');
-    // CompanyService.createCompanyProfile(8, "L'entreprise");
-
-    // const offer = {
-    //     companyId: 6,
-    //     name: 'Alternance java',
-    //     description: 'blablabla',
-    //     email: 'company1@gmail.com',
-    //     phoneNumber: '01.70.67.23.12',
-    //     address: '71, Rue de la Pompe 78200 MANTES-LA-JOLIE',
-    //   };
-    
-      // Offers.create(offer)
-
     PlanningService.createPlanning();
     return res.send("ok");
+}
+
+exports.findByCandidateId = async (req, res) => {
+  try {
+    const candidateProfileId = req.params.candidateId;
+
+    //On recherche le userId à partir de l'id du candidat
+    const candidate_profile = await CandidateProfile.findOne({
+      where: { id: candidateProfileId },
+      include: [
+        { model: User }
+      ],
+    });
+
+    if (!candidate_profile) {
+      return res.status(404).send("Impossible de retrouver ce candidat");
+    }
+
+    const userId = candidate_profile.user.id;
+
+    //On recherche les différents rdv prévus pour ce candidat
+    const slots = await Slot.findAll(
+      { where: { userPlanning: userId } }
+    );
+
+    if (!slots) {
+      return res.status(404).send("Il n'existe pas de planning pour cet user");
+    }
+
+    return res.send(slots);
+
+  } catch (err) {
+    throw err;
+  }
+    
+}
+
+exports.findByUserId = async (req, res) => {
+  const userId = req.params.userId;
+  try {
+
+    //On recherche les slots de ce planning
+    const slots = await Slot.findAll(
+      { where: { userPlanning: userId } }
+    );
+
+    if (!slots) {
+      return res.status(404).send("Il n'existe pas de planning pour cet user");
+    }
+
+    return res.send(slots);
+  } catch (err) {
+    throw err;
+  }
 }

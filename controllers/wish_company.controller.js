@@ -5,9 +5,6 @@ const Wish_CompanyService = require("../services/wish_company.service");
 
 exports.createWishCompany = async (req, res) => {
     const { rank, companyId, candidateId } = req.body;
-    console.log(rank);
-    console.log(companyId);
-    console.log(candidateId);
 
     if (!(companyId && candidateId && rank)) {
         return res.status(400).send("All input is required");

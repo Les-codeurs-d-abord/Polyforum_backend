@@ -4,7 +4,11 @@ module.exports = app => {
     const cors = require("../middleware/cors");
 
     router.post("", planning.generationPlanning);
-  
+
+    router.get("/:userId", cors, planning.findByUserId);
+
+    router.get('/candidate/:candidateId', cors, planning.findByCandidateId);
+
     app.use('/api/planning', router);
   };
   
