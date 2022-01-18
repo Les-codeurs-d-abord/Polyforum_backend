@@ -5,16 +5,16 @@ module.exports = (app) => {
   const router = require("express").Router();
 
   // Update a User email
-  router.put("/:userId", cors, users.update);
+  router.put("/:userId", users.update);
 
   // Update a User password
-  router.put("/:userId/changePassword", cors, users.changePassword);
+  router.put("/:userId/changePassword", users.changePassword);
 
   // Update a User password
-  router.put("/:userId/resetPassword", cors, users.resetPassword);
+  router.put("/:userId/resetPassword", users.resetPassword);
 
   // Get all admins
-  router.get("/admins", cors, users.findAdmins);
+  router.get("/admins", users.findAdmins);
 
   // Get a user
   router.get("/:userId", cors, users.findById);

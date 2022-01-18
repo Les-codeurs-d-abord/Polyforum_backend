@@ -4,7 +4,7 @@ module.exports = app => {
   const cors = require("../middleware/cors");
 
   //return file 
-  router.get("/:folder/:file", cors, res.getFile);
+  router.get("/:folder/:file", res.getFile);
 
   app.use('/api/res', router);
 };
