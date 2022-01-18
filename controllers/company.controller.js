@@ -2,6 +2,7 @@ const db = require("../models");
 const { Sequelize } = require("../models");
 const User = db.users;
 const CompanyProfile = db.company_profiles;
+const CompanyLink = db.company_links;
 
 const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
@@ -62,19 +63,21 @@ exports.createCompany = async (req, res) => {
 exports.findById = async (req, res) => {
   const userId = req.params.userId;
   try {
-    const company_profile = await CompanyProfile.findAll({
+    const company_profile = await CompanyProfile.findOne({
       where: { userId: userId },
       include: [
         {
           model: User,
           attributes: ["id", "email", "role"],
         },
+        { model: CompanyLink },
       ],
+      attributes: { exclude: ["userId"] }
     });
-    if (!company_profile.length) {
+    if (!company_profile) {
       return res.status(404).send("Pas d'entreprise trouvée");
     }
-    return res.send(company_profile[0]);
+    return res.send(company_profile);
   } catch (err) {
     return res.status(500).send(err.message);
   }
@@ -107,17 +110,25 @@ exports.deleteById = async (req, res) => {
 // Update a User by the id in the request
 exports.updateCompanyProfile = async (req, res) => {
   const userId = req.params.userId;
+  const {
+    companyName,
+    phoneNumber,
+    description,
+    address,
+    links,
+  } = req.body;
   const updateContent = {
-    companyName: req.body.companyName,
-    phoneNumber: req.body.phoneNumber ? req.body.phoneNumber : null,
-    description: req.body.description ? req.body.description : null,
+    companyName: companyName,
+    phoneNumber: phoneNumber ? phoneNumber : null,
+    description: description ? description : null,
+    address: address ? address : null
   };
 
-  if (!updateContent.companyName) {
+  if (!companyName) {
     return res
       .status(400)
       .send(
-        "Au moins un champ manquant (raison sociale / téléphone / description)"
+        "Au moins un champ manquant (raison sociale)"
       );
   }
 
@@ -133,6 +144,20 @@ exports.updateCompanyProfile = async (req, res) => {
     await CompanyProfile.update(updateContent, {
       where: { userid: userId },
     });
+
+    // Delete previous links
+    await CompanyLink.destroy({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+
+    // Create new links
+    for (let i = 0; i < links.length; i++) {
+      await CompanyLink.create({
+        companyProfileId: checkCompanyProfile.id,
+        label: links[i],
+      });
+    }
+
     return res.send(`Profil d'entreprise ${userId} mis à jour`);
   } catch (err) {
     return res.status(500).send(err.message);
@@ -219,8 +244,8 @@ exports.uploadLogo = async (req, res) => {
 
       cb(
         "Error: File upload only supports the " +
-          "following filetypes - " +
-          filetypes
+        "following filetypes - " +
+        filetypes
       );
     },
 

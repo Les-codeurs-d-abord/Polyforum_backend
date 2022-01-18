@@ -3,7 +3,6 @@ const User = db.users;
 const CandidateProfile = db.candidate_profiles;
 const CandidateLink = db.candidate_links;
 const CandidateTag = db.candidate_tags;
-const Tag = db.tags;
 
 const UserService = require("../services/user.service");
 const CandidateProfileService = require("../services/candidate_profile.service");
@@ -72,15 +71,7 @@ exports.candidateList = async (req, res) => {
           attributes: ["id", "email"],
         },
         { model: CandidateLink },
-        {
-          model: CandidateTag,
-          include: [
-            {
-              model: Tag,
-              attributes: ["id", "label"],
-            },
-          ],
-        },
+        { model: CandidateTag },
       ],
       attributes: ["firstName", "lastName"],
     });
@@ -103,15 +94,7 @@ exports.findById = async (req, res) => {
           attributes: ["id", "email", "role"],
         },
         { model: CandidateLink },
-        {
-          model: CandidateTag,
-          include: [
-            {
-              model: Tag,
-              attributes: ["id", "label"],
-            },
-          ],
-        },
+        { model: CandidateTag },
       ],
     });
     if (!candidate_profile.length) {
@@ -126,22 +109,32 @@ exports.findById = async (req, res) => {
 // Delete a single candidate with an id
 exports.deleteById = async (req, res) => {
   const userId = req.params.userId;
+
   try {
-    const profileDeleted = await CandidateProfile.destroy({
+    const checkCandidateProfile = await CandidateProfile.findOne({
+      where: { userId: userId },
+    });
+    if (!checkCandidateProfile) {
+      return res.status(409).send("Ce candidat n'existe pas");
+    }
+
+    await CandidateLink.destroy({
+      where: { candidateProfileId: checkCandidateProfile.id },
+    });
+
+    await CandidateTag.destroy({
+      where: { candidateProfileId: checkCandidateProfile.id },
+    });
+
+    await CandidateProfile.destroy({
       where: { userId: userId },
     });
 
     await User.destroy({
-      where: { userId: userId },
+      where: { id: userId },
     });
 
-    if (profileDeleted) {
-      // Profile deleted
-      return res.status(200).send("Candidat supprimé");
-    } else {
-      // Profile not found
-      return res.status(404).send("Pas de candidat trouvé");
-    }
+    return res.status(200).send("Candidat supprimé");
   } catch (err) {
     return res.status(500).send(err.message);
   }
@@ -150,18 +143,26 @@ exports.deleteById = async (req, res) => {
 // Update a User by the id in the request
 exports.updateCandidateProfile = async (req, res) => {
   const userId = req.params.userId;
+  const {
+    firstName,
+    lastName,
+    phoneNumber,
+    description,
+    address,
+    tags,
+    links,
+  } = req.body;
+
   const updateContent = {
-    candidateName: req.body.candidateName,
-    phoneNumber: req.body.phoneNumber ? req.body.phoneNumber : null,
-    description: req.body.description ? req.body.description : null,
+    firstName: firstName,
+    lastName: lastName,
+    phoneNumber: phoneNumber ? phoneNumber : null,
+    description: description ? description : null,
+    address: address ? address : null,
   };
 
-  if (!updateContent.candidateName) {
-    return res
-      .status(400)
-      .send(
-        "Au moins un champ manquant (raison sociale / téléphone / description)"
-      );
+  if (!(firstName && lastName)) {
+    return res.status(400).send("Au moins un champ manquant (nom, prénom)");
   }
 
   //Check if this candidate profile exists
@@ -176,7 +177,34 @@ exports.updateCandidateProfile = async (req, res) => {
     await CandidateProfile.update(updateContent, {
       where: { userId: userId },
     });
-    return res.send(`Profil d'entreprise ${userId} mis à jour`);
+
+    // Delete previous tags
+    await CandidateTag.destroy({
+      where: { candidateProfileId: checkCandidateProfile.id },
+    });
+
+    // Create new tags
+    for (let i = 0; i < tags.length; i++) {
+      await CandidateTag.create({
+        candidateProfileId: checkCandidateProfile.id,
+        label: tags[i],
+      });
+    }
+
+    // Delete previous links
+    await CandidateLink.destroy({
+      where: { candidateProfileId: checkCandidateProfile.id },
+    });
+
+    // Create new links
+    for (let i = 0; i < links.length; i++) {
+      await CandidateLink.create({
+        candidateProfileId: checkCandidateProfile.id,
+        label: links[i],
+      });
+    }
+
+    return res.send(`Profil de candidat ${userId} mis à jour`);
   } catch (err) {
     return res.status(500).send(err.message);
   }
@@ -189,8 +217,8 @@ exports.uploadLogo = async (req, res) => {
     where: { userId: userId },
   });
 
-  if(!checkCandidateProfile) {
-    return res.status(404).send("Ce candidat n'existe pas")
+  if (!checkCandidateProfile) {
+    return res.status(404).send("Ce candidat n'existe pas");
   }
 
   let deleteOldLogo = false;
@@ -255,14 +283,17 @@ exports.uploadLogo = async (req, res) => {
         }
       );
       if (deleteOldLogo) {
-        fs.unlink("data/candidateLogos/" + checkCandidateProfile.logo, (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
+        fs.unlink(
+          "data/candidateLogos/" + checkCandidateProfile.logo,
+          (err) => {
+            if (err) {
+              console.error(err);
+              return;
+            }
 
-          //file removed
-        });
+            //file removed
+          }
+        );
       }
       // SUCCESS, image successfully uploaded
       res.send("Success, Image uploaded!");
@@ -277,8 +308,8 @@ exports.uploadCV = async (req, res) => {
     where: { userId: userId },
   });
 
-  if(!checkCandidateProfile) {
-    return res.status(404).send("Ce candidat n'existe pas")
+  if (!checkCandidateProfile) {
+    return res.status(404).send("Ce candidat n'existe pas");
   }
 
   let deleteOldCV = false;
@@ -291,9 +322,9 @@ exports.uploadCV = async (req, res) => {
     },
     filename: function (req, file, cb) {
       extension = file.originalname.split(".")[1];
-      console.log(extension)
-      deleteOldLogo = checkCandidateProfile.logo
-        ? extension != checkCandidateProfile.logo.split(".")[1]
+      console.log(extension);
+      deleteOldCV = checkCandidateProfile.cv
+        ? extension != checkCandidateProfile.cv.split(".")[1]
         : false;
       cb(null, "candidateCV_" + userId + "." + extension);
     },
@@ -343,7 +374,7 @@ exports.uploadCV = async (req, res) => {
           where: { userId: userId },
         }
       );
-      if (deleteOldLogo) {
+      if (deleteOldCV) {
         fs.unlink("data/candidateCV/" + checkCandidateProfile.cv, (err) => {
           if (err) {
             console.error(err);
@@ -359,34 +390,7 @@ exports.uploadCV = async (req, res) => {
   });
 };
 
-exports.addLink = async (req, res) => {
-  const userId = req.params.userId;
-  const label = req.body.label;
-
-  if (!label) {
-    return res.status(400).send("Le lien est manquant");
-  }
-
-  //Check if this candidate profile exists
-  const checkCandidateProfile = await CandidateProfile.findOne({
-    where: { userId: userId },
-  });
-  if (!checkCandidateProfile) {
-    return res.status(409).send("Ce profil de candidat n'existe pas");
-  }
-
-  try {
-    const linkData = {
-      label: label,
-      candidateProfileId: checkCandidateProfile.id,
-    };
-    await CandidateLink.create(linkData);
-    res.send("Lien de candidat ajouté");
-  } catch (err) {
-    throw new Error(err.message);
-  }
-};
-
+// Get links of a specific user
 exports.linksList = async (req, res) => {
   const userId = req.params.userId;
 
@@ -408,73 +412,7 @@ exports.linksList = async (req, res) => {
   }
 };
 
-// Delete a single candidate link with an id
-exports.deleteLinkById = async (req, res) => {
-  const linkId = req.params.linkId;
-
-  try {
-    const linkDeleted = await CandidateLink.destroy({
-      where: { id: linkId },
-    });
-
-    if (linkDeleted) {
-      // Link deleted
-      return res.status(200).send("Lien de candidat supprimé");
-    } else {
-      // Link not found
-      return res.status(404).send("Pas de lien de candidat trouvé");
-    }
-  } catch (err) {
-    return res.status(500).send(err.message);
-  }
-};
-
-exports.addTag = async (req, res) => {
-  const userId = req.params.userId;
-  const tagLabel = req.body.label;
-
-  if (!tagLabel) {
-    return res.status(400).send("Le tag est manquant");
-  }
-
-  //Check if this candidate profile exists
-  const checkCandidateProfile = await CandidateProfile.findOne({
-    where: { userId: userId },
-  });
-  if (!checkCandidateProfile) {
-    return res.status(409).send("Ce profil de candidat n'existe pas");
-  }
-
-  //Check if this tag exists
-  let tag = await Tag.findOne({
-    where: { label: tagLabel },
-  });
-
-  try {
-    // If this tag doesn't exist, create it
-    if (!tag) {
-      tag = await Tag.create({ label: tagLabel });
-    }
-
-    // Check if the candidate already has this tag
-    let checkAlreadyHasTag = await CandidateTag.findOne({
-      where: { candidateProfileId: checkCandidateProfile.id, tagId: tag.id },
-    });
-    if (checkAlreadyHasTag) {
-      return res.status(409).send("Ce candidat a déjà ce tag");
-    }
-
-    const tagData = {
-      tagId: tag.id,
-      candidateProfileId: checkCandidateProfile.id,
-    };
-    await CandidateTag.create(tagData);
-    res.send("Tag de candidat ajouté");
-  } catch (err) {
-    throw new Error(err.message);
-  }
-};
-
+// Get tags of a specific user
 exports.tagsList = async (req, res) => {
   const userId = req.params.userId;
 
@@ -489,36 +427,8 @@ exports.tagsList = async (req, res) => {
   try {
     const candidate_tags = await CandidateTag.findAll({
       where: { candidateProfileId: checkCandidateProfile.id },
-      include: [
-        {
-          model: Tag,
-          attributes: ["id", "label"],
-        },
-      ],
-      attributes: { exclude: ["candidateProfileId", "tagId"] },
     });
     return res.send(candidate_tags);
-  } catch (err) {
-    return res.status(500).send(err.message);
-  }
-};
-
-// Delete a single candidate link with an id
-exports.deleteTagById = async (req, res) => {
-  const candidateTagId = req.params.candidateTagId;
-
-  try {
-    const tagDeleted = await CandidateTag.destroy({
-      where: { id: candidateTagId },
-    });
-
-    if (tagDeleted) {
-      // Link deleted
-      return res.status(200).send("Tag de candidat supprimé");
-    } else {
-      // Link not found
-      return res.status(404).send("Pas de tag de candidat trouvé");
-    }
   } catch (err) {
     return res.status(500).send(err.message);
   }
