@@ -9,6 +9,8 @@ module.exports = app => {
 
     router.get('/candidate/:candidateId', cors, planning.findByCandidateId);
 
+    router.get('/company/:companyId', cors, planning.findByCompanyId);
+
     app.use('/api/planning', router);
   };
   
