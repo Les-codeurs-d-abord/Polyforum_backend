@@ -2,7 +2,6 @@ module.exports = (app) => {
 
     const wishController = require("../controllers/wish_company.controller");
 
-    const cors = require("../middleware/cors");
     const router = require("express").Router();
 
     // Update the rank of a wish

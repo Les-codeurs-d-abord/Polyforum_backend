@@ -2,7 +2,6 @@ module.exports = (app) => {
   const companyController = require("../controllers/company.controller.js");
 
   const router = require("express").Router();
-  const cors = require("../middleware/cors");
 
   // Retrieve all companies
   router.get("/", companyController.companyList);

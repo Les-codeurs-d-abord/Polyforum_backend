@@ -2,6 +2,7 @@ const db = require("../models");
 const User = db.users;
 
 const UserService = require("../services/user.service");
+const MailService = require("../services/mail.service");
 const bcrypt = require("bcrypt");
 
 require("dotenv").config();
@@ -53,7 +54,10 @@ exports.changePassword = async (req, res) => {
       return res.status(403).send("Mauvais mot de passe");
     }
 
-    const hash = await bcrypt.hash(newPassword, parseInt(process.env.SALT_ROUNDS));
+    const hash = await bcrypt.hash(
+      newPassword,
+      parseInt(process.env.SALT_ROUNDS)
+    );
     await User.update(
       { password: hash },
       {
@@ -67,7 +71,7 @@ exports.changePassword = async (req, res) => {
   }
 };
 
-exports.resetPassword = async(req, res) => {
+exports.resetPassword = async (req, res) => {
   const userId = req.params.userId;
 
   //Check if user exists
@@ -78,14 +82,14 @@ exports.resetPassword = async(req, res) => {
 
   try {
     const password = await UserService.update(userId, checkUser.email);
-    console.log("New password :", password)
+    console.log("New password :", password);
     // TODO Décommenter pour l'envoi des mails
-    // await MailService.sendAccountCreated(checkUser.email, password);
+    // await MailService.sendPswReset(checkUser.email, password);
     return res.send(`Mot de passe de l'utilisateur ${userId} réinitialisé`);
   } catch (err) {
     return res.status(500).send(err.message);
   }
-}
+};
 
 // Create an admin User
 exports.createAdmin = async (req, res) => {
@@ -140,6 +144,15 @@ exports.findAdmins = async (req, res) => {
       attributes: { exclude: ["password"] },
     });
     return res.send(admins);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
+
+exports.sendReminders = async (req, res) => {
+  try {
+    await MailService.sendReminders();
+    return res.send();
   } catch (err) {
     return res.status(500).send(err.message);
   }
