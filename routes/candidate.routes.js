@@ -19,12 +19,6 @@ module.exports = (app) => {
   // Create a new candidate User
   router.post("/", cors, candidateController.createCandidate);
 
-  // Add a candidate tag
-  router.post("/:userId/tags", cors, candidateController.addTag);
-
-  // Add a candidate link
-  router.post("/:userId/links", cors, candidateController.addLink);
-
   // Upload a profile picture
   router.post("/:userId/uploadLogo", cors, candidateController.uploadLogo);
 
@@ -36,16 +30,6 @@ module.exports = (app) => {
 
   // Delete a single candidate with id
   router.delete("/:userId", cors, candidateController.deleteById);
-
-  // Delete a candidate link with id
-  router.delete("/links/:linkId", cors, candidateController.deleteLinkById);
-
-  // Delete a candidate tag with id
-  router.delete(
-    "/tags/:candidateTagId",
-    cors,
-    candidateController.deleteTagById
-  );
 
   app.use("/api/candidates", router);
 };

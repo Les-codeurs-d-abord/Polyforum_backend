@@ -63,7 +63,7 @@ exports.createCompany = async (req, res) => {
 exports.findById = async (req, res) => {
   const userId = req.params.userId;
   try {
-    const company_profile = await CompanyProfile.findAll({
+    const company_profile = await CompanyProfile.findOne({
       where: { userId: userId },
       include: [
         {
@@ -71,13 +71,13 @@ exports.findById = async (req, res) => {
           attributes: ["id", "email", "role"],
         },
         { model: CompanyLink },
-
       ],
+      attributes: { exclude: ["userId"] }
     });
-    if (!company_profile.length) {
+    if (!company_profile) {
       return res.status(404).send("Pas d'entreprise trouvée");
     }
-    return res.send(company_profile[0]);
+    return res.send(company_profile);
   } catch (err) {
     return res.status(500).send(err.message);
   }
@@ -115,7 +115,7 @@ exports.updateCompanyProfile = async (req, res) => {
     phoneNumber,
     description,
     address,
-    linksList,
+    links,
   } = req.body;
   const updateContent = {
     companyName: companyName,
@@ -150,11 +150,11 @@ exports.updateCompanyProfile = async (req, res) => {
       where: { companyProfileId: checkCompanyProfile.id },
     });
 
-    // Create new tags
-    for (let i = 0; i < linksList.length; i++) {
+    // Create new links
+    for (let i = 0; i < links.length; i++) {
       await CompanyLink.create({
         companyProfileId: checkCompanyProfile.id,
-        label: linksList[i],
+        label: links[i],
       });
     }
 
@@ -244,8 +244,8 @@ exports.uploadLogo = async (req, res) => {
 
       cb(
         "Error: File upload only supports the " +
-          "following filetypes - " +
-          filetypes
+        "following filetypes - " +
+        filetypes
       );
     },
 
