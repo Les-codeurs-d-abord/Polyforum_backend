@@ -1,24 +1,46 @@
 const db = require("../models");
 const Offers = db.offers;
-const Tags = db.tags;
 const Offer_Tags = db.offer_tags;
 const Offer_Links = db.offer_links;
 const Company_Profiles = db.company_profiles;
 const { Sequelize } = require("../models");
 
+const path = require("path");
+const multer = require("multer");
+const fs = require("fs");
+
 // Create an offer
 exports.createOffer = async (req, res) => {
-  const { companyProfileId, name, description, offerLink, phoneNumber, email, address } = req.body;
+  const {
+    companyProfileId,
+    name,
+    description,
+    phoneNumber,
+    email,
+    address,
+    linksList,
+    tagsList,
+  } = req.body;
 
   // Validate input
-  if (!(name && description && companyProfileId && offerLink && email && phoneNumber && address)) {
+  if (
+    !(
+      name &&
+      description &&
+      companyProfileId &&
+      email &&
+      phoneNumber &&
+      address &&
+      linksList &&
+      tagsList
+    )
+  ) {
     return res.status(400).send("All input is required");
   }
 
-
-  const offer = {
+  const offerData = {
     companyProfileId: companyProfileId,
-    name: name,
+    name: name, 
     description: description,
     email: email,
     phoneNumber: phoneNumber,
@@ -26,11 +48,249 @@ exports.createOffer = async (req, res) => {
     offerLink: offerLink
   };
 
-  Offers.create(offer)
-    .then(
-      (value) => res.status(201).json({ value }))
-    .catch(error => res.status(400).json({ error })
-    );
+  try {
+    const offer = await Offers.create(offerData);
+
+    // Create new tags
+    for (let i = 0; i < tagsList.length; i++) {
+      await Offer_Tags.create({
+        offerId: offer.id,
+        label: tagsList[i],
+      });
+    }
+
+    // Create new links
+    for (let i = 0; i < linksList.length; i++) {
+      await Offer_Links.create({
+        offerId: offer.id,
+        label: linksList[i],
+      });
+    }
+    return res.send(offer);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
+
+// Update  an offer
+exports.updateOffer = async (req, res) => {
+  const offerId = req.params.offerId;
+  const { name, description, phoneNumber, email, address } =
+    req.body;
+
+  // Validate input
+  if (!(name && description && phoneNumber && email && address )) {
+    return res.status(400).send("All input is required");
+  }
+
+  const offerData = {
+    name: name,
+    phoneNumber: phoneNumber,
+    description: description,
+    address: address,
+    email: email,
+  };
+
+  try {
+    const offer = await Offers.update(offerData, {
+      where: { id: offerId },
+    });
+
+    // Create new tags
+    for (let i = 0; i < tagsList.length; i++) {
+      await Offer_Tags.create({
+        offerId: offer.id,
+        label: tagsList[i],
+      });
+    }
+
+    // Create new links
+    for (let i = 0; i < linksList.length; i++) {
+      await Offer_Links.create({
+        offerId: offer.id,
+        label: linksList[i],
+      });
+    }
+    return res.send(offer);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
+
+exports.upload = async (req, res) => {
+  const offerId = req.params.offerId;
+
+  const checkOffer = await Offers.findOne({
+    where: { id: offerId },
+  });
+
+  if (!checkOffer) {
+    return res.status(404).send("Cette offre n'existe pas");
+  }
+
+  let deleteOldFile = false;
+  let extension = "";
+
+  var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      // Uploads is the Upload_folder_name
+      cb(null, "data/offerFiles");
+    },
+    filename: function (req, file, cb) {
+      extension = file.originalname.split(".")[1];
+      deleteOldFile = checkOffer.offerFile
+        ? extension != checkOffer.offerFile.split(".")[1]
+        : false;
+      cb(null, "offer_" + offerId + "." + extension);
+    },
+  });
+
+  // Define the maximum size for uploading
+  // picture i.e. 4 MB. it is optional
+  const maxSize = 4 * 1000 * 1000;
+
+  var upload = multer({
+    storage: storage,
+    limits: { fileSize: maxSize },
+    fileFilter: function (req, file, cb) {
+      // Set the filetypes, it is optional
+      var filetypes = /pdf|doc|docx/;
+      var mimetype = filetypes.test(file.mimetype);
+
+      var extname = filetypes.test(
+        path.extname(file.originalname).toLowerCase()
+      );
+
+      if (mimetype && extname) {
+        return cb(null, true);
+      }
+
+      cb(
+        "Error: File upload only supports the " +
+          "following filetypes - " +
+          filetypes
+      );
+    },
+
+    // offerFile is the name of file attribute
+  }).single("offerFile");
+
+  upload(req, res, function (err) {
+    if (err) {
+      // ERROR occured (here it can be occured due
+      // to uploading image of size greater than
+      // 1MB or uploading different file type)
+      res.status(400).send(err);
+    } else {
+      // update cv in candidate profile
+      Offers.update(
+        { offerFile: "offer_" + offerId + "." + extension },
+        {
+          where: { id: offerId },
+        }
+      );
+      if (deleteOldFile) {
+        fs.unlink("data/offerFiles/" + checkOffer.offerFile, (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+
+          //file removed
+        });
+      }
+      // SUCCESS, offer file successfully uploaded
+      res.send("Success, Offer file uploaded!");
+    }
+  });
+};
+
+exports.upload = async (req, res) => {
+  const offerId = req.params.offerId;
+
+  const checkOffer = await Offers.findOne({
+    where: { id: offerId },
+  });
+
+  if(!checkOffer) {
+    return res.status(404).send("Cette offre n'existe pas")
+  }
+
+  let deleteOldFile = false;
+  let extension = "";
+
+  var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      // Uploads is the Upload_folder_name
+      cb(null, "data/offerFiles");
+    },
+    filename: function (req, file, cb) {
+      extension = file.originalname.split(".")[1];
+      deleteOldFile = checkOffer.offerFile
+        ? extension != checkOffer.offerFile.split(".")[1]
+        : false;
+      cb(null, "offer_" + offerId + "." + extension);
+    },
+  });
+
+  // Define the maximum size for uploading
+  // picture i.e. 4 MB. it is optional
+  const maxSize = 4 * 1000 * 1000;
+
+  var upload = multer({
+    storage: storage,
+    limits: { fileSize: maxSize },
+    fileFilter: function (req, file, cb) {
+      // Set the filetypes, it is optional
+      var filetypes = /pdf|doc|docx/;
+      var mimetype = filetypes.test(file.mimetype);
+
+      var extname = filetypes.test(
+        path.extname(file.originalname).toLowerCase()
+      );
+
+      if (mimetype && extname) {
+        return cb(null, true);
+      }
+
+      cb(
+        "Error: File upload only supports the " +
+          "following filetypes - " +
+          filetypes
+      );
+    },
+
+    // offerFile is the name of file attribute
+  }).single("offerFile");
+
+  upload(req, res, function (err) {
+    if (err) {
+      // ERROR occured (here it can be occured due
+      // to uploading image of size greater than
+      // 1MB or uploading different file type)
+      res.status(400).send(err);
+    } else {
+      // update cv in candidate profile
+      Offers.update(
+        { offerFile: "offer_" + offerId + "." + extension },
+        {
+          where: { id: offerId },
+        }
+      );
+      if (deleteOldFile) {
+        fs.unlink("data/offerFiles/" + checkOffer.offerFile, (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+
+          //file removed
+        });
+      }
+      // SUCCESS, offer file successfully uploaded
+      res.send("Success, Offer file uploaded!");
+    }
+  });
 };
 
 exports.getAllOffer = async (req, res) => {
@@ -42,32 +302,25 @@ exports.getAllOffer = async (req, res) => {
       //Check if Tag already exists
       const checkOfferTag = await Offer_Tags.findOne({
         where: {
-          id: req.query.tag
+          label: req.query.tag,
         },
       });
 
       if (checkOfferTag) {
         const offerIdList = await Offers.findAll({
           raw: true,
-          where: { '$offer_tags.tagId$': req.query.tag },
-          attributes: ['id'],
+          where: { "$offer_tags.label$": req.query.tag },
+          attributes: ["id"],
           include: [
             {
               model: Offer_Tags,
-              attributes: [],
-              include: [
-                {
-                  attributes: [],
-                  model: Tags,
-                }
-              ],
-            }
+            },
           ],
         });
 
         var idList = [];
         for (var i in offerIdList) {
-          idList.push(offerIdList[i]['id']);
+          idList.push(offerIdList[i]["id"]);
         }
 
         whereStatmentTag.id = idList;
@@ -77,50 +330,34 @@ exports.getAllOffer = async (req, res) => {
     if (req.query.input) {
       whereStatmentInput = Sequelize.or(
         {
-          "name": {
-            [Sequelize.Op.like]: "%" + req.query.input + "%"
+          name: {
+            [Sequelize.Op.like]: "%" + req.query.input + "%",
           },
         },
         {
-          "description": {
-            [Sequelize.Op.like]: "%" + req.query.input + "%"
+          description: {
+            [Sequelize.Op.like]: "%" + req.query.input + "%",
           },
         },
         {
-          '$company_profile.companyName$': {
-            [Sequelize.Op.like]: "%" + req.query.input + "%"
+          "$company_profile.companyName$": {
+            [Sequelize.Op.like]: "%" + req.query.input + "%",
           },
         }
       );
     }
 
     Offers.findAll({
-      where: Sequelize.and(
-        whereStatmentTag,
-        whereStatmentInput,
-      ),
+      where: Sequelize.and(whereStatmentTag, whereStatmentInput),
       include: [
-        {
-          model: Company_Profiles,
-        },
-        {
-          model: Offer_Links,
-        },
-        {
-          model: Offer_Tags,
-          include: [
-            {
-              model: Tags,
-            }
-          ],
-        }
+        { model: Company_Profiles },
+        { model: Offer_Links },
+        { model: Offer_Tags },
       ],
-    }).then(offerList => {
-      console.log(offerList);
+    }).then((offerList) => {
       return res.status(200).json(offerList);
     });
-  }
-  catch (err) {
+  } catch (err) {
     return res.status(500).send(err.message);
   }
 };
@@ -152,8 +389,7 @@ exports.createOfferLink = async (req, res) => {
 
   Offer_Links.create(offerLink)
     .then((value) => res.status(201).json({ value }))
-    .catch(error => res.status(400).json({ error })
-    );
+    .catch((error) => res.status(400).json({ error }));
 };
 
 //Offer Tags//
@@ -199,8 +435,7 @@ exports.createOfferTag = async (req, res) => {
 
   Offer_Tags.create(offer_tag)
     .then((value) => res.status(201).json({ value }))
-    .catch(error => res.status(400).json({ error })
-    );
+    .catch((error) => res.status(400).json({ error }));
 };
 
 //Find one by Id
@@ -211,7 +446,7 @@ exports.findOfferTagByOfferId = async (req, res) => {
     const offer_tag = await Offer_Tags.findAll({
       where: {
         offerId: offerId,
-      }
+      },
     });
 
     if (offer_tag) {
@@ -219,23 +454,6 @@ exports.findOfferTagByOfferId = async (req, res) => {
     } else {
       return res.status(404).send(`Offer Tag unfound with offerId: ${offerId}`);
     }
-  } catch (err) {
-    return res.status(500).send(err.message);
-  }
-};
-
-//Find All
-exports.findAllOfferTags = async (req, res) => {
-  try {
-    const offer_tags = await Offer_Tags.findAll({
-      group: ['tagId'],
-      include: [
-        {
-          model: Tags,
-        }
-      ]
-    });
-    return res.send(offer_tags);
   } catch (err) {
     return res.status(500).send(err.message);
   }

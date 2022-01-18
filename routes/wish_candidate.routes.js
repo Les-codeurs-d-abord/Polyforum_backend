@@ -5,17 +5,17 @@ module.exports = (app) => {
     const cors = require("../middleware/cors");
     const router = require("express").Router();
 
-    // Update the rank of a wish
-    router.put("/:wishId", cors, wishController.update);
+    // Update the wishes' ranks of a candidate
+    router.put("/:candidateId", wishController.update);
 
     // Get all the wishes from an candidateId
-    router.get("/:candidateId", cors, wishController.findAllByCandidateId);
+    router.get("/:candidateId", wishController.findAllByCandidateId);
 
-    // Create a wish
-    router.post("", cors, wishController.createWishCandidate);
+    // Add a wish to a candidate
+    router.post("", wishController.createWishCandidate);
 
     // Delete a single wish with id
-    router.delete("/:wishId", cors, wishController.deleteById);
+    router.delete("/:wishId", wishController.deleteById);
 
     app.use("/api/wishcandidate", router);
 };

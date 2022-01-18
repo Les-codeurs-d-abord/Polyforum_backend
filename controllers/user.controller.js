@@ -2,6 +2,9 @@ const db = require("../models");
 const User = db.users;
 
 const UserService = require("../services/user.service");
+const bcrypt = require("bcrypt");
+
+require("dotenv").config();
 
 // Update a User email by the id in the request
 // It resets the password and send it to the new email
@@ -20,7 +23,7 @@ exports.update = async (req, res) => {
   }
 
   try {
-    password = await UserService.update(userId, email);
+    const password = await UserService.update(userId, email);
     // TODO Décommenter pour l'envoi des mails
     // await MailService.sendAccountCreated(email, password);
     return res.send(`Utilisateur ${userId} mis à jour`);
@@ -28,6 +31,61 @@ exports.update = async (req, res) => {
     return res.status(500).send(err.message);
   }
 };
+
+// Update a User password by the id in the request
+exports.changePassword = async (req, res) => {
+  const userId = req.params.userId;
+  const { oldPassword, newPassword } = req.body;
+
+  if (!(oldPassword && newPassword)) {
+    return res.status(400).send("All input is required");
+  }
+
+  //Check if user exists
+  const checkUser = await User.findByPk(userId);
+  if (!checkUser) {
+    return res.status(404).send("Cet utilisateur n'existe pas");
+  }
+
+  try {
+    const valid = await bcrypt.compare(oldPassword, checkUser.password);
+    if (!valid) {
+      return res.status(403).send("Mauvais mot de passe");
+    }
+
+    const hash = await bcrypt.hash(newPassword, parseInt(process.env.SALT_ROUNDS));
+    await User.update(
+      { password: hash },
+      {
+        where: { id: userId },
+      }
+    );
+
+    return res.send(`Mot de passe de l'utilisateur ${userId} mis à jour`);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
+
+exports.resetPassword = async(req, res) => {
+  const userId = req.params.userId;
+
+  //Check if user exists
+  const checkUser = await User.findByPk(userId);
+  if (!checkUser) {
+    return res.status(404).send("Cet utilisateur n'existe pas");
+  }
+
+  try {
+    const password = await UserService.update(userId, checkUser.email);
+    console.log("New password :", password)
+    // TODO Décommenter pour l'envoi des mails
+    // await MailService.sendAccountCreated(checkUser.email, password);
+    return res.send(`Mot de passe de l'utilisateur ${userId} réinitialisé`);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+}
 
 // Create an admin User
 exports.createAdmin = async (req, res) => {
@@ -85,4 +143,4 @@ exports.findAdmins = async (req, res) => {
   } catch (err) {
     return res.status(500).send(err.message);
   }
-}
+};

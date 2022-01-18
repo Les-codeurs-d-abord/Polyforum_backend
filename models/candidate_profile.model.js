@@ -21,7 +21,10 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.TEXT,
     },
     logo: {
-      type: Sequelize.BLOB('long'),
+      type: Sequelize.STRING(255),
+    },
+    cv: {
+      type: Sequelize.STRING(255),
     }
   });
 

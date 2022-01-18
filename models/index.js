@@ -23,7 +23,6 @@ db.users = require("./user.model.js")(sequelize, Sequelize);
 db.company_profiles = require("./company_profile.model.js")(sequelize, Sequelize);
 db.candidate_profiles = require("./candidate_profile.model.js")(sequelize, Sequelize);
 db.offers = require("./offer.model.js")(sequelize, Sequelize);
-db.tags = require("./tag.model.js")(sequelize, Sequelize);
 db.offer_tags = require("./offer_tag.model.js")(sequelize, Sequelize);
 db.candidate_tags = require("./candidate_tag.model.js")(sequelize, Sequelize);
 db.offer_links = require("./offer_link.model.js")(sequelize, Sequelize);
@@ -44,8 +43,6 @@ db.candidate_profiles.belongsTo(db.users);
 db.candidate_profiles.hasMany(db.candidate_links);
 db.candidate_links.belongsTo(db.candidate_profiles);
 
-db.tags.hasMany(db.candidate_tags);
-db.candidate_tags.belongsTo(db.tags);
 db.candidate_profiles.hasMany(db.candidate_tags);
 
 db.offers.hasMany(db.offer_tags);
@@ -56,8 +53,6 @@ db.offer_links.belongsTo(db.offers);
 
 db.offers.belongsTo(db.company_profiles);
 
-db.tags.hasMany(db.offer_tags);
-db.offer_tags.belongsTo(db.tags);
 
 
 module.exports = db;

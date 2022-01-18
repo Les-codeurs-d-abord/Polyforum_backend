@@ -6,11 +6,11 @@ module.exports = app => {
     const auth = require("../middleware/auth");
     const cors = require("../middleware/cors");
 
-    router.post("/signin", cors, login.getToken);
+    router.post("/signin", login.getToken);
 
-    router.get("/token", auth, cors, login.checkTokenValidity);
+    router.get("/token", auth, login.checkTokenValidity);
 
-    router.get("/user", auth, cors, login.getUserFromToken);
+    router.get("/user", auth, login.getUserFromToken);
   
     app.use('/api/login', router);
   };

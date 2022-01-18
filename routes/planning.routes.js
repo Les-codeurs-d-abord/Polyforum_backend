@@ -7,7 +7,7 @@ module.exports = app => {
 
     router.get("/:userId", cors, planning.findByUserId);
 
-    router.get('/candidate/:candidateId', cors, planning.findByCandidateId);
+    router.get('/candidate/:f', cors, planning.findByCandidateId);
 
     app.use('/api/planning', router);
   };

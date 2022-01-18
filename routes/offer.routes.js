@@ -5,13 +5,14 @@ module.exports = app => {
 
   //offer
   router.post("", offer.createOffer);
-  router.get("", cors, offer.getAllOffer);
+  router.post("/:offerId/upload", offer.upload);
+  router.get("", offer.getAllOffer);
+  router.put("/:offerId", offer.updateOffer)
 
   //offer_tags
-  router.post("/tag", cors, offer.createOfferTag);
-  router.get("/tag/:offerId", cors, offer.findOfferTagByOfferId);
-  router.get("/tag", cors, offer.findAllOfferTags);
-  router.post("/link", cors, offer.createOfferLink);
+  router.post("/tag", offer.createOfferTag);
+  router.get("/tag/:offerId", offer.findOfferTagByOfferId);
+  router.post("/link", offer.createOfferLink);
 
   app.use('/api/offer', router);
 };
