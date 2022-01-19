@@ -51,8 +51,9 @@ exports.getToken = async (req, res) => {
 };
 
 exports.getUserFromToken = async (req, res) => {
+  console.log("token");
   const token = req.headers.authorization.split(' ')[1];
-
+  console.log(token);
   jwt.verify(token, process.env.JWT_KEY, async (err, decoded) => {
     if(decoded.role === User.ROLES.CANDIDATE) {
       try {
