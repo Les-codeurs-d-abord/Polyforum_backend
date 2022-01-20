@@ -68,12 +68,11 @@ exports.candidateList = async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ["id", "email"],
+          attributes: { exclude: ["password"] },
         },
         { model: CandidateLink },
         { model: CandidateTag },
       ],
-      attributes: ["firstName", "lastName"],
     });
     return res.send(candidate_profiles);
   } catch (err) {
