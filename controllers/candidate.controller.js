@@ -86,21 +86,11 @@ exports.findById = async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const candidate_profile = await CandidateProfile.findAll({
-      where: { userId: userId },
-      include: [
-        {
-          model: User,
-          attributes: ["id", "email", "role"],
-        },
-        { model: CandidateLink },
-        { model: CandidateTag },
-      ],
-    });
-    if (!candidate_profile.length) {
+    const candidate_profile = await CandidateProfileService.findById(userId);
+    if (!candidate_profile) {
       return res.status(404).send("Pas de candidat trouvée");
     }
-    return res.send(candidate_profile[0]);
+    return res.send(candidate_profile);
   } catch (err) {
     return res.status(500).send(err.message);
   }
@@ -153,7 +143,6 @@ exports.updateCandidateProfile = async (req, res) => {
     tags,
     links,
   } = obj;
-
 
   const updateContent = {
     firstName: firstName,
@@ -215,7 +204,9 @@ exports.updateCandidateProfile = async (req, res) => {
       });
     }
 
-    return res.send(`Profil de candidat ${userId} mis à jour`);
+    const updatedProfile = await CandidateProfileService.findById(userId);
+
+    return res.send(updatedProfile);
   } catch (err) {
     return res.status(500).send(err.message);
   }

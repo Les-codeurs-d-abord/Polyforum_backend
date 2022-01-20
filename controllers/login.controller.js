@@ -37,7 +37,7 @@ exports.getToken = async (req, res) => {
             CandidateProfile.update(
               { status: "Incomplet" },
               { where: { userId: user.id, status: "Jamais connecté" } }
-            ).error((error) => res.status(500).json({ error }));
+            ).catch((error) => res.status(500).json({ error }));
           }
 
           var payload = {
