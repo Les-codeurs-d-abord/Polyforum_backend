@@ -178,6 +178,15 @@ exports.updateCandidateProfile = async (req, res) => {
       where: { userId: userId },
     });
 
+    if (checkCandidateProfile.cv && phoneNumber && description && address) {
+      await CandidateProfile.update(
+        { status: "Complet" },
+        {
+          where: { userId: userId },
+        }
+      );
+    }
+
     // Delete previous tags
     await CandidateTag.destroy({
       where: { candidateProfileId: checkCandidateProfile.id },

@@ -1,12 +1,12 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const db = require("../models");
 const User = db.users;
 const CandidateProfile = db.candidate_profiles;
 
-var jwt = require('jsonwebtoken');
+var jwt = require("jsonwebtoken");
 
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 
 exports.getToken = async (req, res) => {
   const { email, password } = req.body;
@@ -18,16 +18,24 @@ exports.getToken = async (req, res) => {
   }
 
   User.findOne({ where: { email: req.body.email } })
-    .then(user => {
+    .then((user) => {
       if (!user) {
         return res.status(401).json({ error: "Unknown user." });
       }
 
-      bcrypt.compare(password, user.password)
-        .then(valid => {
+      bcrypt
+        .compare(password, user.password)
+        .then((valid) => {
           if (!valid) {
             console.log("lef,lmerflme");
             return res.status(401).json({ error: "Wrong password." });
+          }
+
+          if (user.role === User.ROLES.CANDIDATE) {
+            CandidateProfile.update(
+              { status: "Incomplet" },
+              { where: { userId: user.id, status: "Jamais connecté" } }
+            ).error((error) => res.status(500).json({ error }));
           }
 
           var payload = {
@@ -38,23 +46,22 @@ exports.getToken = async (req, res) => {
 
           res.status(200).json({
             payload,
-            token: jwt.sign(
-              payload,
-              process.env.JWT_KEY,
-              { algorithm: "HS256", expiresIn: "24h" }
-            )
+            token: jwt.sign(payload, process.env.JWT_KEY, {
+              algorithm: "HS256",
+              expiresIn: "24h",
+            }),
           });
         })
-        .catch(error => res.status(500).json({ error }));
+        .catch((error) => res.status(500).json({ error }));
     })
-    .catch(error => res.status(500).json({ error }));
+    .catch((error) => res.status(500).json({ error }));
 };
 
 exports.getUserFromToken = async (req, res) => {
-  const token = req.headers.authorization.split(' ')[1];
+  const token = req.headers.authorization.split(" ")[1];
 
   jwt.verify(token, process.env.JWT_KEY, async (err, decoded) => {
-    if(decoded.role === User.ROLES.CANDIDATE) {
+    if (decoded.role === User.ROLES.CANDIDATE) {
       try {
         const candidate_profile = await CandidateProfile.findAll({
           where: { userId: decoded.id },
@@ -72,8 +79,7 @@ exports.getUserFromToken = async (req, res) => {
       } catch (err) {
         return res.status(500).send(err.message);
       }
-    }
-    else if(decoded.role === User.ROLES.COMPANY) {
+    } else if (decoded.role === User.ROLES.COMPANY) {
       try {
         const company_profile = await CompanyProfile.findAll({
           where: { userId: decoded.id },
@@ -91,9 +97,7 @@ exports.getUserFromToken = async (req, res) => {
       } catch (err) {
         return res.status(500).send(err.message);
       }
-    }
-    else if(decoded.role === User.ROLES.ADMIN) {
-
+    } else if (decoded.role === User.ROLES.ADMIN) {
     }
 
     return res.status(500).send("Une erreur est survenue.");
