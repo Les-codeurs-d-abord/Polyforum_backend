@@ -279,23 +279,20 @@ exports.uploadLogo = async (req, res) => {
     } else {
       // update logo in candidate profile
       CandidateProfile.update(
-        { logo: "candidateLogo_" + userId + "." + extension },
+        { logo: "candidateLogos/candidateLogo_" + userId + "." + extension },
         {
           where: { userId: userId },
         }
       );
       if (deleteOldLogo) {
-        fs.unlink(
-          "data/candidateLogos/" + checkCandidateProfile.logo,
-          (err) => {
-            if (err) {
-              console.error(err);
-              return;
-            }
-
-            //file removed
+        fs.unlink("data/" + checkCandidateProfile.logo, (err) => {
+          if (err) {
+            console.error(err);
+            return;
           }
-        );
+
+          //file removed
+        });
       }
       // SUCCESS, image successfully uploaded
       res.send("Success, Image uploaded!");
@@ -371,13 +368,13 @@ exports.uploadCV = async (req, res) => {
     } else {
       // update cv in candidate profile
       CandidateProfile.update(
-        { cv: "candidateCV_" + userId + "." + extension },
+        { cv: "candidateCV/candidateCV_" + userId + "." + extension },
         {
           where: { userId: userId },
         }
       );
       if (deleteOldCV) {
-        fs.unlink("data/candidateCV/" + checkCandidateProfile.cv, (err) => {
+        fs.unlink("data/" + checkCandidateProfile.cv, (err) => {
           if (err) {
             console.error(err);
             return;

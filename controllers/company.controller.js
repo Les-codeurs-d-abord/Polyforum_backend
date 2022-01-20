@@ -72,7 +72,7 @@ exports.findById = async (req, res) => {
         },
         { model: CompanyLink },
       ],
-      attributes: { exclude: ["userId"] }
+      attributes: { exclude: ["userId"] },
     });
     if (!company_profile) {
       return res.status(404).send("Pas d'entreprise trouvée");
@@ -110,26 +110,16 @@ exports.deleteById = async (req, res) => {
 // Update a User by the id in the request
 exports.updateCompanyProfile = async (req, res) => {
   const userId = req.params.userId;
-  const {
-    companyName,
-    phoneNumber,
-    description,
-    address,
-    links,
-  } = req.body;
+  const { companyName, phoneNumber, description, address, links } = req.body;
   const updateContent = {
     companyName: companyName,
     phoneNumber: phoneNumber ? phoneNumber : null,
     description: description ? description : null,
-    address: address ? address : null
+    address: address ? address : null,
   };
 
   if (!companyName) {
-    return res
-      .status(400)
-      .send(
-        "Au moins un champ manquant (raison sociale)"
-      );
+    return res.status(400).send("Au moins un champ manquant (raison sociale)");
   }
 
   //Check if this company profile exists
@@ -244,8 +234,8 @@ exports.uploadLogo = async (req, res) => {
 
       cb(
         "Error: File upload only supports the " +
-        "following filetypes - " +
-        filetypes
+          "following filetypes - " +
+          filetypes
       );
     },
 
@@ -261,13 +251,13 @@ exports.uploadLogo = async (req, res) => {
     } else {
       // update logo in company profile
       CompanyProfile.update(
-        { logo: "companyLogo_" + userId + "." + extension },
+        { logo: "companyLogos/companyLogo_" + userId + "." + extension },
         {
           where: { userId: userId },
         }
       );
       if (deleteOldLogo) {
-        fs.unlink("data/companyLogos/" + checkCompanyProfile.logo, (err) => {
+        fs.unlink("data/" + checkCompanyProfile.logo, (err) => {
           if (err) {
             console.error(err);
             return;
