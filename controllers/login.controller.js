@@ -3,6 +3,8 @@ require('dotenv').config();
 const db = require("../models");
 const User = db.users;
 const CandidateProfile = db.candidate_profiles;
+const CandidateLink = db.candidate_links;
+const CandidateTag = db.candidate_tags;
 
 var jwt = require('jsonwebtoken');
 
@@ -51,9 +53,9 @@ exports.getToken = async (req, res) => {
 };
 
 exports.getUserFromToken = async (req, res) => {
-  console.log("token");
+  
   const token = req.headers.authorization.split(' ')[1];
-  console.log(token);
+
   jwt.verify(token, process.env.JWT_KEY, async (err, decoded) => {
     if(decoded.role === User.ROLES.CANDIDATE) {
       try {
@@ -64,6 +66,8 @@ exports.getUserFromToken = async (req, res) => {
               model: User,
               attributes: ["id", "email", "role"],
             },
+              { model: CandidateLink },
+            { model: CandidateTag },
           ],
         });
         if (!candidate_profile.length) {
