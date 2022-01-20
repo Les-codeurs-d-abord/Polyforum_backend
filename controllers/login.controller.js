@@ -3,6 +3,8 @@ require("dotenv").config();
 const db = require("../models");
 const User = db.users;
 const CandidateProfile = db.candidate_profiles;
+const CandidateLink = db.candidate_links;
+const CandidateTag = db.candidate_tags;
 
 var jwt = require("jsonwebtoken");
 
@@ -70,6 +72,8 @@ exports.getUserFromToken = async (req, res) => {
               model: User,
               attributes: ["id", "email", "role"],
             },
+              { model: CandidateLink },
+            { model: CandidateTag },
           ],
         });
         if (!candidate_profile.length) {

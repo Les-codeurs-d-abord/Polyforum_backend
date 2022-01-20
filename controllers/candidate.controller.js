@@ -51,7 +51,7 @@ exports.createCandidate = async (req, res) => {
         lastName
       );
     console.log("Candidate profile created : ", candidateProfile.toJSON());
-    console.log(password);
+    console.log("Password ", password);
     // TODO Décommenter pour l'envoi des mails
     // await MailService.sendAccountCreated(user.email, password);
 
@@ -142,6 +142,7 @@ exports.deleteById = async (req, res) => {
 
 // Update a User by the id in the request
 exports.updateCandidateProfile = async (req, res) => {
+  const obj = JSON.parse(req.body.data);
   const userId = req.params.userId;
   const {
     firstName,
@@ -151,7 +152,8 @@ exports.updateCandidateProfile = async (req, res) => {
     address,
     tags,
     links,
-  } = req.body;
+  } = obj;
+
 
   const updateContent = {
     firstName: firstName,
