@@ -1,5 +1,4 @@
 const db = require("../models");
-const Planning = db.planning;
 const Slot = db.slot;
 const CandidateProfile = db.candidate_profiles;
 const CompanyProfile = db.company_profiles;

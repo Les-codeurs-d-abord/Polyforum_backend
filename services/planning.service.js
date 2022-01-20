@@ -174,7 +174,7 @@ exports.createPlanning = async () => {
                 const idCompany = mapCompanyUserIdToCompanyId.get(planningCandidate[w][s]);
 
                 const company = allCompanies[mapCompanyIndex.get(idCompany)];
-                const nameCandidate = candidate.firstName +' ' + candidate.lastName;
+                const nameCandidate  = candidate.firstName.concat(" ", candidate.lastName);
 
                 const slotValues = {
                     userPlanning: candidate.userId,
