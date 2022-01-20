@@ -45,6 +45,7 @@ exports.createOffer = async (req, res) => {
     email: email,
     phoneNumber: phoneNumber,
     address: address,
+    offerLink: offerLink
   };
 
   try {
