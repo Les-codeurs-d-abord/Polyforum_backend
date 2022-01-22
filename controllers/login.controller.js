@@ -5,6 +5,7 @@ const User = db.users;
 const CandidateProfile = db.candidate_profiles;
 const CandidateLink = db.candidate_links;
 const CandidateTag = db.candidate_tags;
+const CompanyProfile = db.company_profiles;
 
 var jwt = require("jsonwebtoken");
 
@@ -65,7 +66,7 @@ exports.getUserFromToken = async (req, res) => {
   jwt.verify(token, process.env.JWT_KEY, async (err, decoded) => {
     if (decoded.role === User.ROLES.CANDIDATE) {
       try {
-        const candidate_profile = await CandidateProfile.findAll({
+        const candidate_profile = await CandidateProfile.findOne({
           where: { userId: decoded.id },
           include: [
             {
@@ -76,16 +77,16 @@ exports.getUserFromToken = async (req, res) => {
             { model: CandidateTag },
           ],
         });
-        if (!candidate_profile.length) {
+        if (!candidate_profile) {
           return res.status(404).send("Pas de candidat trouvé");
         }
-        return res.send(candidate_profile[0]);
+        return res.send(candidate_profile);
       } catch (err) {
         return res.status(500).send(err.message);
       }
     } else if (decoded.role === User.ROLES.COMPANY) {
       try {
-        const company_profile = await CompanyProfile.findAll({
+        const company_profile = await CompanyProfile.findOne({
           where: { userId: decoded.id },
           include: [
             {
@@ -94,14 +95,26 @@ exports.getUserFromToken = async (req, res) => {
             },
           ],
         });
-        if (!company_profile.length) {
+        if (!company_profile) {
           return res.status(404).send("Pas d'entreprise trouvée");
         }
-        return res.send(company_profile[0]);
+        return res.send(company_profile);
       } catch (err) {
         return res.status(500).send(err.message);
       }
     } else if (decoded.role === User.ROLES.ADMIN) {
+      try {
+        const admin_profile = await User.findOne({
+          where: { id: decoded.id },
+          attributes: ["id", "email", "role"],
+        });
+        if (!admin_profile) {
+          return res.status(404).send("Pas d'admin trouvé");
+        }
+        return res.send(admin_profile);
+      } catch (err) {
+        return res.status(500).send(err.message);
+      }
     }
 
     return res.status(500).send("Une erreur est survenue.");
