@@ -6,6 +6,9 @@ module.exports = (app) => {
   // Retrieve all companies
   router.get("/", companyController.companyList);
 
+  // Retrieve all offers company with id
+  router.get("/:userId/offer", companyController.findOffersById);
+
   // Retrieve a single company with id
   router.get("/:userId", companyController.findById);
 

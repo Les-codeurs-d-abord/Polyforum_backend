@@ -3,6 +3,9 @@ const { Sequelize } = require("../models");
 const User = db.users;
 const CompanyProfile = db.company_profiles;
 const CompanyLink = db.company_links;
+const Offer = db.offers;
+const OfferLink = db.offer_links;
+const OfferTag = db.offer_tags;
 
 const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
@@ -268,4 +271,27 @@ exports.uploadLogo = async (req, res) => {
       res.send("Success, Image uploaded!");
     }
   });
+};
+
+exports.findOffersById = async (req, res) => {
+  const userId = req.params.userId;
+
+  const checkCompanyProfile = await CompanyProfile.findOne({
+    where: { userId: userId },
+  });
+
+  if (!checkCompanyProfile) {
+    return res.status(404).send("Cette entreprise n'existe pas");
+  }
+
+  try {
+    const offers = await Offer.findAll({
+      where: { companyProfileId: checkCompanyProfile.id },
+      include: [{ model: OfferLink }, { model: OfferTag }],
+    });
+
+    return res.send(offers);
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
 };
