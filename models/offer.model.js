@@ -1,5 +1,3 @@
-const offer_tag = require("./user.model.js");
-
 module.exports = (sequelize, Sequelize) => {
   const Offer = sequelize.define("offer", {
     name: {

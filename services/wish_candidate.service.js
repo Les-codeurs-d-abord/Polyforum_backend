@@ -1,5 +1,6 @@
 const db = require("../models");
 const Wish_Candidate = db.wish_candidate;
+const Offer = db.offers;
 
 exports.update = async (wishId, rank) => {
   try {
@@ -15,6 +16,7 @@ exports.findAllByCandidateId = async (candidateId) => {
     const list = await Wish_Candidate.findAll({
       where: { candidateId: candidateId },
       order: [[`rank`, `ASC`]],
+      include: [{ model: Offer }],
     });
     return list;
   } catch (err) {
