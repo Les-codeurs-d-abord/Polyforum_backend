@@ -9,8 +9,8 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
     max: dbConfig.pool.max,
     min: dbConfig.pool.min,
     acquire: dbConfig.pool.acquire,
-    idle: dbConfig.pool.idle
-  }
+    idle: dbConfig.pool.idle,
+  },
 });
 
 const db = {};
@@ -20,8 +20,14 @@ db.sequelize = sequelize;
 
 // Entities
 db.users = require("./user.model.js")(sequelize, Sequelize);
-db.company_profiles = require("./company_profile.model.js")(sequelize, Sequelize);
-db.candidate_profiles = require("./candidate_profile.model.js")(sequelize, Sequelize);
+db.company_profiles = require("./company_profile.model.js")(
+  sequelize,
+  Sequelize
+);
+db.candidate_profiles = require("./candidate_profile.model.js")(
+  sequelize,
+  Sequelize
+);
 db.offers = require("./offer.model.js")(sequelize, Sequelize);
 db.offer_tags = require("./offer_tag.model.js")(sequelize, Sequelize);
 db.candidate_tags = require("./candidate_tag.model.js")(sequelize, Sequelize);
@@ -32,7 +38,7 @@ db.wish_candidate = require("./wish_candidate.model.js")(sequelize, Sequelize);
 db.wish_company = require("./wish_company.model")(sequelize, Sequelize);
 db.planning = require("./planning.model")(sequelize, Sequelize);
 db.slot = require("./slot.model")(sequelize, Sequelize);
-
+db.phase = require("./phase.model")(sequelize, Sequelize);
 
 // Relations / Associations
 db.company_profiles.belongsTo(db.users);
@@ -55,7 +61,5 @@ db.offers.belongsTo(db.company_profiles);
 db.company_profiles.hasMany(db.offers);
 
 db.wish_candidate.belongsTo(db.offers);
-
-
 
 module.exports = db;
