@@ -1,4 +1,5 @@
 const db = require("../models");
+const { Sequelize } = require("../models");
 const User = db.users;
 const CandidateProfile = db.candidate_profiles;
 const CandidateLink = db.candidate_links;
@@ -73,6 +74,19 @@ exports.candidateList = async (req, res) => {
         { model: CandidateLink },
         { model: CandidateTag },
       ],
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM wish_candidates AS wish_candidate
+            WHERE
+            wish_candidate.candidateId = candidate_profile.id
+        )`),
+            "wishesCount",
+          ],
+        ],
+      },
     });
     return res.send(candidate_profiles);
   } catch (err) {
