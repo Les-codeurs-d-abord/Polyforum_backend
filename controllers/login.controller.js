@@ -30,7 +30,6 @@ exports.getToken = async (req, res) => {
         .compare(password, user.password)
         .then((valid) => {
           if (!valid) {
-            console.log("lef,lmerflme");
             return res.status(401).json({ error: "Wrong password." });
           }
 

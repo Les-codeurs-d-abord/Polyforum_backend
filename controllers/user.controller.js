@@ -3,6 +3,7 @@ const User = db.users;
 
 const UserService = require("../services/user.service");
 const MailService = require("../services/mail.service");
+const PhaseService = require("../services/phase.service");
 const bcrypt = require("bcrypt");
 
 require("dotenv").config();
@@ -151,7 +152,17 @@ exports.findAdmins = async (req, res) => {
 
 exports.sendReminders = async (req, res) => {
   try {
-    await MailService.sendReminders();
+    const phase = await PhaseService.getCurrentPhase();
+    switch (phase.currentPhase) {
+      case "INSCRIPTION":
+        await MailService.sendProfileReminders();
+        break;
+      case "VOEUX":
+        await MailService.sendWishReminders();
+        break;
+      default:
+        res.status(400).send("Pas de rappel prévu durant cette phase");
+    }
     return res.send();
   } catch (err) {
     return res.status(500).send(err.message);

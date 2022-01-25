@@ -128,7 +128,6 @@ exports.delete = async (req, res) => {
     const wishDeleted = await Wish_Candidate.destroy({
       where: { offerId: offerId, candidateProfileId: candidateProfileId },
     });
-    console.log("WishDeleted", wishDeleted);
 
     // Wish deleted
     if (wishDeleted) {
