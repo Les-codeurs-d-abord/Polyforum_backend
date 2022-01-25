@@ -10,6 +10,15 @@ exports.createWishCandidate = async (req, res) => {
     return res.status(400).send("All input is required");
   }
 
+  const checkExistingWish = await Wish_Candidate.findOne({where: {
+    candidateId: candidateId,
+    offerId: offerId
+  }})
+
+  if (checkExistingWish) {
+    return res.status(409).send("Ce candidat a déja fait ce voeu")
+  }
+
   const candidateWishesCount = await Wish_Candidate.count({
     where: {
       candidateId: candidateId,

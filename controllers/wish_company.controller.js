@@ -10,6 +10,15 @@ exports.createWishCompany = async (req, res) => {
     return res.status(400).send("All input is required");
   }
 
+  const checkExistingWish = await Wish_Company.findOne({where: {
+    candidateId: candidateId,
+    companyId: companyId
+  }})
+
+  if (checkExistingWish) {
+    return res.status(409).send("Cette entreprise a déja fait ce voeu")
+  }
+
   const companyWishesCount = await Wish_Company.count({
     where: {
       companyId: companyId,

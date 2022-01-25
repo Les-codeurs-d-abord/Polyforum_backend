@@ -170,7 +170,6 @@ exports.companyList = async (req, res) => {
         "companyName",
         "logo",
         [
-          // Note the wrapping parentheses in the call below!
           Sequelize.literal(`(
             SELECT COUNT(*)
             FROM offers AS offer

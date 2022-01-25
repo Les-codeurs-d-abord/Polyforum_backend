@@ -30,6 +30,11 @@ require("./routes/res.routes")(app);
 require("./routes/planning.routes")(app);
 require("./routes/wish_candidate.routes")(app);
 require("./routes/wish_company.routes")(app);
+require("./routes/phase.routes")(app);
+
+// Initialize phase
+const PhaseService = require('./services/phase.service')
+PhaseService.setInscriptionPhase()
 
 // set port, listen for requests
 const PORT = process.env.PORT || 8080;
