@@ -1,7 +1,6 @@
 module.exports = (app) => {
   const users = require("../controllers/user.controller.js");
 
-  const cors = require("../middleware/cors");
   const router = require("express").Router();
 
   // Update a User email
@@ -10,17 +9,20 @@ module.exports = (app) => {
   // Update a User password
   router.put("/:userId/changePassword", users.changePassword);
 
-  // Update a User password
+  // Reset a User password
   router.put("/:userId/resetPassword", users.resetPassword);
 
   // Get all admins
   router.get("/admins", users.findAdmins);
 
+  // Send reminder mails to candidates and companies
+  router.get("/sendReminders", users.sendReminders);
+
   // Get a user
-  router.get("/:userId", cors, users.findById);
+  router.get("/:userId", users.findById);
 
   // Create an admin
-  router.post("/admins", cors, users.createAdmin);
+  router.post("/admins", users.createAdmin);
 
   app.use("/api/users", router);
 };

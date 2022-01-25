@@ -40,12 +40,11 @@ exports.createOffer = async (req, res) => {
 
   const offerData = {
     companyProfileId: companyProfileId,
-    name: name, 
+    name: name,
     description: description,
     email: email,
     phoneNumber: phoneNumber,
     address: address,
-    offerLink: offerLink
   };
 
   try {
@@ -75,11 +74,10 @@ exports.createOffer = async (req, res) => {
 // Update  an offer
 exports.updateOffer = async (req, res) => {
   const offerId = req.params.offerId;
-  const { name, description, phoneNumber, email, address } =
-    req.body;
+  const { name, description, phoneNumber, email, address } = req.body;
 
   // Validate input
-  if (!(name && description && phoneNumber && email && address )) {
+  if (!(name && description && phoneNumber && email && address)) {
     return res.status(400).send("All input is required");
   }
 
@@ -184,101 +182,13 @@ exports.upload = async (req, res) => {
     } else {
       // update cv in candidate profile
       Offers.update(
-        { offerFile: "offer_" + offerId + "." + extension },
+        { offerFile: "offerFiles/offer_" + offerId + "." + extension },
         {
           where: { id: offerId },
         }
       );
       if (deleteOldFile) {
-        fs.unlink("data/offerFiles/" + checkOffer.offerFile, (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-
-          //file removed
-        });
-      }
-      // SUCCESS, offer file successfully uploaded
-      res.send("Success, Offer file uploaded!");
-    }
-  });
-};
-
-exports.upload = async (req, res) => {
-  const offerId = req.params.offerId;
-
-  const checkOffer = await Offers.findOne({
-    where: { id: offerId },
-  });
-
-  if(!checkOffer) {
-    return res.status(404).send("Cette offre n'existe pas")
-  }
-
-  let deleteOldFile = false;
-  let extension = "";
-
-  var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      // Uploads is the Upload_folder_name
-      cb(null, "data/offerFiles");
-    },
-    filename: function (req, file, cb) {
-      extension = file.originalname.split(".")[1];
-      deleteOldFile = checkOffer.offerFile
-        ? extension != checkOffer.offerFile.split(".")[1]
-        : false;
-      cb(null, "offer_" + offerId + "." + extension);
-    },
-  });
-
-  // Define the maximum size for uploading
-  // picture i.e. 4 MB. it is optional
-  const maxSize = 4 * 1000 * 1000;
-
-  var upload = multer({
-    storage: storage,
-    limits: { fileSize: maxSize },
-    fileFilter: function (req, file, cb) {
-      // Set the filetypes, it is optional
-      var filetypes = /pdf|doc|docx/;
-      var mimetype = filetypes.test(file.mimetype);
-
-      var extname = filetypes.test(
-        path.extname(file.originalname).toLowerCase()
-      );
-
-      if (mimetype && extname) {
-        return cb(null, true);
-      }
-
-      cb(
-        "Error: File upload only supports the " +
-          "following filetypes - " +
-          filetypes
-      );
-    },
-
-    // offerFile is the name of file attribute
-  }).single("offerFile");
-
-  upload(req, res, function (err) {
-    if (err) {
-      // ERROR occured (here it can be occured due
-      // to uploading image of size greater than
-      // 1MB or uploading different file type)
-      res.status(400).send(err);
-    } else {
-      // update cv in candidate profile
-      Offers.update(
-        { offerFile: "offer_" + offerId + "." + extension },
-        {
-          where: { id: offerId },
-        }
-      );
-      if (deleteOldFile) {
-        fs.unlink("data/offerFiles/" + checkOffer.offerFile, (err) => {
+        fs.unlink("data/" + checkOffer.offerFile, (err) => {
           if (err) {
             console.error(err);
             return;

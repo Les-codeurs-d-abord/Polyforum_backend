@@ -2,7 +2,6 @@ module.exports = (app) => {
 
     const wishController = require("../controllers/wish_candidate.controller.js");
 
-    const cors = require("../middleware/cors");
     const router = require("express").Router();
 
     // Update the wishes' ranks of a candidate

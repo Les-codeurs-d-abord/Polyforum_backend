@@ -25,6 +25,13 @@ module.exports = (sequelize, Sequelize) => {
     },
     cv: {
       type: Sequelize.STRING(255),
+    },
+    status: {
+      type: Sequelize.ENUM('Jamais connecté', 'Incomplet', 'Complet'),
+      allowNull: false,
+      validate: {
+        isIn: [['Jamais connecté', 'Incomplet', 'Complet']]
+      }
     }
   });
 

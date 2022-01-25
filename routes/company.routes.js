@@ -2,10 +2,12 @@ module.exports = (app) => {
   const companyController = require("../controllers/company.controller.js");
 
   const router = require("express").Router();
-  const cors = require("../middleware/cors");
 
   // Retrieve all companies
   router.get("/", companyController.companyList);
+
+  // Retrieve all offers company with id
+  router.get("/:userId/offer", companyController.findOffersById);
 
   // Retrieve a single company with id
   router.get("/:userId", companyController.findById);

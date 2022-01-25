@@ -1,7 +1,6 @@
 module.exports = app => {
   const offer = require("../controllers/offer.controller.js");
   const router = require("express").Router();
-  const cors = require("../middleware/cors");
 
   //offer
   router.post("", offer.createOffer);

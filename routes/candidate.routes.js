@@ -2,7 +2,6 @@ module.exports = (app) => {
   const candidateController = require("../controllers/candidate.controller.js");
 
   const router = require("express").Router();
-  const cors = require("../middleware/cors");
 
   // Retrieve all candidates
   router.get("/", candidateController.candidateList);

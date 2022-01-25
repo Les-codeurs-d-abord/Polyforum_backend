@@ -1,4 +1,5 @@
 const db = require("../models");
+const { Sequelize } = require("../models");
 const User = db.users;
 const CandidateProfile = db.candidate_profiles;
 const CandidateLink = db.candidate_links;
@@ -43,7 +44,6 @@ exports.createCandidate = async (req, res) => {
       email,
       User.ROLES.CANDIDATE
     );
-    console.log(password)
     console.log("Candidate created : ", user.toJSON());
     const candidateProfile =
       await CandidateProfileService.createCandidateProfile(
@@ -69,12 +69,24 @@ exports.candidateList = async (req, res) => {
       include: [
         {
           model: User,
-          attributes: ["id", "email"],
+          attributes: { exclude: ["password"] },
         },
         { model: CandidateLink },
         { model: CandidateTag },
       ],
-      attributes: ["firstName", "lastName"],
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM wish_candidates AS wish_candidate
+            WHERE
+            wish_candidate.candidateId = candidate_profile.id
+        )`),
+            "wishesCount",
+          ],
+        ],
+      },
     });
     return res.send(candidate_profiles);
   } catch (err) {
@@ -87,21 +99,11 @@ exports.findById = async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    const candidate_profile = await CandidateProfile.findAll({
-      where: { userId: userId },
-      include: [
-        {
-          model: User,
-          attributes: ["id", "email", "role"],
-        },
-        { model: CandidateLink },
-        { model: CandidateTag },
-      ],
-    });
-    if (!candidate_profile.length) {
+    const candidate_profile = await CandidateProfileService.findById(userId);
+    if (!candidate_profile) {
       return res.status(404).send("Pas de candidat trouvée");
     }
-    return res.send(candidate_profile[0]);
+    return res.send(candidate_profile);
   } catch (err) {
     return res.status(500).send(err.message);
   }
@@ -155,7 +157,6 @@ exports.updateCandidateProfile = async (req, res) => {
     links,
   } = obj;
 
-
   const updateContent = {
     firstName: firstName,
     lastName: lastName,
@@ -180,6 +181,15 @@ exports.updateCandidateProfile = async (req, res) => {
     await CandidateProfile.update(updateContent, {
       where: { userId: userId },
     });
+
+    if (checkCandidateProfile.cv && phoneNumber && description && address) {
+      await CandidateProfile.update(
+        { status: "Complet" },
+        {
+          where: { userId: userId },
+        }
+      );
+    }
 
     // Delete previous tags
     await CandidateTag.destroy({
@@ -207,7 +217,9 @@ exports.updateCandidateProfile = async (req, res) => {
       });
     }
 
-    return res.send(`Profil de candidat ${userId} mis à jour`);
+    const updatedProfile = await CandidateProfileService.findById(userId);
+
+    return res.send(updatedProfile);
   } catch (err) {
     return res.status(500).send(err.message);
   }
@@ -280,23 +292,20 @@ exports.uploadLogo = async (req, res) => {
     } else {
       // update logo in candidate profile
       CandidateProfile.update(
-        { logo: "candidateLogo_" + userId + "." + extension },
+        { logo: "candidateLogos/candidateLogo_" + userId + "." + extension },
         {
           where: { userId: userId },
         }
       );
       if (deleteOldLogo) {
-        fs.unlink(
-          "data/candidateLogos/" + checkCandidateProfile.logo,
-          (err) => {
-            if (err) {
-              console.error(err);
-              return;
-            }
-
-            //file removed
+        fs.unlink("data/" + checkCandidateProfile.logo, (err) => {
+          if (err) {
+            console.error(err);
+            return;
           }
-        );
+
+          //file removed
+        });
       }
       // SUCCESS, image successfully uploaded
       res.send("Success, Image uploaded!");
@@ -372,13 +381,13 @@ exports.uploadCV = async (req, res) => {
     } else {
       // update cv in candidate profile
       CandidateProfile.update(
-        { cv: "candidateCV_" + userId + "." + extension },
+        { cv: "candidateCV/candidateCV_" + userId + "." + extension },
         {
           where: { userId: userId },
         }
       );
       if (deleteOldCV) {
-        fs.unlink("data/candidateCV/" + checkCandidateProfile.cv, (err) => {
+        fs.unlink("data/" + checkCandidateProfile.cv, (err) => {
           if (err) {
             console.error(err);
             return;
