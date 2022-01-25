@@ -7,6 +7,9 @@ module.exports = (app) => {
     // Update the wishes' ranks of a candidate
     router.put("/:candidateProfileId", wishController.update);
 
+    // Check if a wish already exists
+    router.get("/check", wishController.checkByCandidateIdAndOfferId);
+
     // Get all the wishes from an candidateId
     router.get("/:candidateProfileId", wishController.findAllByCandidateId);
 

@@ -89,8 +89,8 @@ exports.findAllByCandidateId = async (req, res) => {
   }
 };
 
-exports.findByCandidateAndOffer = async (req, res) => {
-  const { offerId, candidateProfileId: candidateProfileId } = req.body;
+exports.checkByCandidateIdAndOfferId = async (req, res) => {
+  const { offerId, candidateProfileId } = req.body;
 
   if (!(offerId && candidateProfileId)) {
     res.status(400).send("All input required");
