@@ -4,24 +4,26 @@ const Wish_CandidateService = require("../services/wish_candidate.service");
 const { Sequelize } = require("../models");
 
 exports.createWishCandidate = async (req, res) => {
-  const { candidateId, offerId } = req.body;
+  const { candidateProfileId, offerId } = req.body;
 
-  if (!(candidateId && offerId)) {
+  if (!(candidateProfileId && offerId)) {
     return res.status(400).send("All input is required");
   }
 
-  const checkExistingWish = await Wish_Candidate.findOne({where: {
-    candidateId: candidateId,
-    offerId: offerId
-  }})
+  const checkExistingWish = await Wish_Candidate.findOne({
+    where: {
+      candidateProfileId: candidateProfileId,
+      offerId: offerId,
+    },
+  });
 
   if (checkExistingWish) {
-    return res.status(409).send("Ce candidat a déja fait ce voeu")
+    return res.status(409).send("Ce candidat a déja fait ce voeu");
   }
 
   const candidateWishesCount = await Wish_Candidate.count({
     where: {
-      candidateId: candidateId,
+      candidateProfileId: candidateProfileId,
     },
   });
 
@@ -30,7 +32,7 @@ exports.createWishCandidate = async (req, res) => {
   }
 
   const wishCandidate = {
-    candidateId: candidateId,
+    candidateProfileId: candidateProfileId,
     offerId: offerId,
     rank: candidateWishesCount + 1,
   };
@@ -41,8 +43,9 @@ exports.createWishCandidate = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const wishList = req.body.wishList;
-  const candidateId = req.params.candidateId;
+  const obj = JSON.parse(req.body.data);
+  const wishList = obj.wishList;
+  const candidateProfileId = req.params.candidateProfileId;
 
   if (!wishList) {
     return res
@@ -54,11 +57,16 @@ exports.update = async (req, res) => {
     for (let i = 0; i < wishList.length; i++) {
       await Wish_Candidate.update(
         { rank: i + 1 },
-        { where: { candidateId: candidateId, offerId: wishList[i] } }
+        {
+          where: {
+            candidateProfileId: candidateProfileId,
+            offerId: wishList[i],
+          },
+        }
       );
     }
     return res.send(
-      `Classement de voeux du candidat ${candidateId} mis à jour`
+      `Classement de voeux du candidat ${candidateProfileId} mis à jour`
     );
   } catch (err) {
     return res.status(500).send(err.message);
@@ -66,30 +74,59 @@ exports.update = async (req, res) => {
 };
 
 exports.findAllByCandidateId = async (req, res) => {
-  const candidateId = req.params.candidateId;
+  const candidateProfileId = req.params.candidateProfileId;
 
-  if (!candidateId) {
+  if (!candidateProfileId) {
     return res.status(400).send("All input is required");
   }
 
   try {
     const wishesFromCandidate =
-      await Wish_CandidateService.findAllByCandidateId(candidateId);
+      await Wish_CandidateService.findAllByCandidateId(candidateProfileId);
     return res.send(wishesFromCandidate);
   } catch (err) {
     return res.status(500).send(err.message);
   }
 };
 
-exports.deleteById = async (req, res) => {
-  const wishId = req.params.wishId;
+exports.findByCandidateAndOffer = async (req, res) => {
+  const { offerId, candidateProfileId: candidateProfileId } = req.body;
+
+  if (!(offerId && candidateProfileId)) {
+    res.status(400).send("All input required");
+  }
 
   try {
-    const wishToDelete = await Wish_Candidate.findByPk(wishId);
-
-    const wishDeleted = await Wish_Candidate.destroy({
-      where: { id: wishId },
+    const checkWish = await Wish_Candidate.findOne({
+      where: {
+        offerId: offerId,
+        candidateProfileId: candidateProfileId,
+      },
     });
+    if (checkWish) {
+      return res.send();
+    }
+    res.status(404).send();
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+exports.delete = async (req, res) => {
+  const { offerId, candidateProfileId } = req.body;
+
+  if (!(offerId && candidateProfileId)) {
+    res.status(400).send("All input required");
+  }
+
+  try {
+    const wishToDelete = await Wish_Candidate.findOne({
+      where: { offerId: offerId, candidateProfileId: candidateProfileId },
+    });
+    const wishDeleted = await Wish_Candidate.destroy({
+      where: { offerId: offerId, candidateProfileId: candidateProfileId },
+    });
+    console.log("WishDeleted", wishDeleted);
 
     // Wish deleted
     if (wishDeleted) {
@@ -99,14 +136,14 @@ exports.deleteById = async (req, res) => {
         {
           where: {
             rank: { [Sequelize.Op.gt]: wishToDelete.rank },
-            candidateId: wishToDelete.candidateId,
+            candidateProfileId: wishToDelete.candidateProfileId,
           },
         }
       );
       return res.status(200).send("Voeux supprimé");
     } else {
       // Wish not found
-      return res.status(404).send(`Pas de voeux trouvé avec l'id ${wishId}`);
+      return res.status(404).send(`Pas de voeux trouvé`);
     }
   } catch (err) {
     return res.status(500).send(err.message);

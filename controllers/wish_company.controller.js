@@ -4,15 +4,15 @@ const Wish_CompanyService = require("../services/wish_company.service");
 const { Sequelize } = require("../models");
 
 exports.createWishCompany = async (req, res) => {
-  const { candidateId, companyId } = req.body;
+  const { candidateProfileId, companyProfileId } = req.body;
 
-  if (!(candidateId && companyId)) {
+  if (!(candidateProfileId && companyProfileId)) {
     return res.status(400).send("All input is required");
   }
 
   const checkExistingWish = await Wish_Company.findOne({where: {
-    candidateId: candidateId,
-    companyId: companyId
+    candidateProfileId: candidateProfileId,
+    companyProfileId: companyProfileId
   }})
 
   if (checkExistingWish) {
@@ -21,7 +21,7 @@ exports.createWishCompany = async (req, res) => {
 
   const companyWishesCount = await Wish_Company.count({
     where: {
-      companyId: companyId,
+      companyProfileId: companyProfileId,
     },
   });
 
@@ -30,8 +30,8 @@ exports.createWishCompany = async (req, res) => {
   }
 
   const wishCompany = {
-    candidateId: candidateId,
-    companyId: companyId,
+    candidateProfileId: candidateProfileId,
+    companyProfileId: companyProfileId,
     rank: companyWishesCount + 1,
   };
 
@@ -41,8 +41,9 @@ exports.createWishCompany = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const wishList = req.body.wishList;
-  const companyId = req.params.companyId;
+  const obj = JSON.parse(req.body.data);
+  const wishList = obj.wishList;
+  const companyProfileId = req.params.companyProfileId;
 
   if (!wishList) {
     return res
@@ -54,11 +55,11 @@ exports.update = async (req, res) => {
     for (let i = 0; i < wishList.length; i++) {
       await Wish_Company.update(
         { rank: i + 1 },
-        { where: { companyId: companyId, candidateId: wishList[i] } }
+        { where: { companyProfileId: companyProfileId, candidateProfileId: wishList[i] } }
       );
     }
     return res.send(
-      `Classement de voeux de l'entreprise ${companyId} mis à jour`
+      `Classement de voeux de l'entreprise ${companyProfileId} mis à jour`
     );
   } catch (err) {
     return res.status(500).send(err.message);
@@ -66,15 +67,15 @@ exports.update = async (req, res) => {
 };
 
 exports.findAllByCompanyId = async (req, res) => {
-  const companyId = req.params.companyId;
+  const companyProfileId = req.params.companyProfileId;
 
-  if (!companyId) {
+  if (!companyProfileId) {
     return res.status(400).send("All input is required");
   }
 
   try {
     const wishesFromCompany = await Wish_CompanyService.findAllByCompanyId(
-      companyId
+      companyProfileId
     );
     return res.send(wishesFromCompany);
   } catch (err) {
@@ -82,14 +83,20 @@ exports.findAllByCompanyId = async (req, res) => {
   }
 };
 
-exports.deleteById = async (req, res) => {
-  const wishId = req.params.wishId;
+exports.delete = async (req, res) => {
+  const { companyProfileId, candidateProfileId } = req.body;
+
+  if (!(companyProfileId && candidateProfileId)) {
+    res.status(400).send("All input required");
+  }
 
   try {
-    const wishToDelete = await Wish_Company.findByPk(wishId);
+    const wishToDelete = await Wish_Company.findOne({
+      where: { companyProfileId: companyProfileId, candidateProfileId: candidateProfileId },
+    });
 
     const wishDeleted = await Wish_Company.destroy({
-      where: { id: wishId },
+      where: { companyProfileId: companyProfileId, candidateProfileId: candidateProfileId },
     });
 
     // Wish deleted
@@ -100,14 +107,14 @@ exports.deleteById = async (req, res) => {
         {
           where: {
             rank: { [Sequelize.Op.gt]: wishToDelete.rank },
-            companyId: wishToDelete.companyId,
+            companyProfileId: wishToDelete.companyProfileId,
           },
         }
       );
       return res.status(200).send("Voeu supprimé");
     } else {
       // Wish not found
-      return res.status(404).send(`Pas de voeux trouvé avec l'id ${wishId}`);
+      return res.status(404).send(`Pas de voeux trouvé`);
     }
   } catch (err) {
     return res.status(500).send(err.message);

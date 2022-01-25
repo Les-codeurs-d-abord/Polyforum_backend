@@ -81,7 +81,7 @@ exports.candidateList = async (req, res) => {
             SELECT COUNT(*)
             FROM wish_candidates AS wish_candidate
             WHERE
-            wish_candidate.candidateId = candidate_profile.id
+            wish_candidate.candidateProfileId = candidate_profile.id
         )`),
             "wishesCount",
           ],

@@ -61,5 +61,8 @@ db.offers.belongsTo(db.company_profiles);
 db.company_profiles.hasMany(db.offers);
 
 db.wish_candidate.belongsTo(db.offers);
+db.wish_candidate.belongsTo(db.candidate_profiles);
+db.wish_company.belongsTo(db.candidate_profiles);
+db.wish_company.belongsTo(db.company_profiles);
 
 module.exports = db;
