@@ -90,10 +90,12 @@ exports.findAllByCandidateId = async (req, res) => {
 };
 
 exports.checkByCandidateIdAndOfferId = async (req, res) => {
+  // console.log(req.params);
+  // console.log(req);
   const { offerId, candidateProfileId } = req.body;
 
   if (!(offerId && candidateProfileId)) {
-    res.status(400).send("All input required");
+    return res.status(400).send("All input required");
   }
 
   try {
