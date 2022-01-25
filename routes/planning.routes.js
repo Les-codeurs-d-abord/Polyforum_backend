@@ -10,7 +10,9 @@ module.exports = app => {
 
     router.get('/company/:companyId', planning.findByCompanyId);
 
-    router.get('/freecompanies/:period', cors, planning.findFreeCompaniesAtGivenPeriod);
+    router.get('/freecompanies/:period', planning.findFreeCompaniesAtGivenPeriod);
+
+    router.post("/meeting", planning.addMeeting);
 
     app.use('/api/planning', router);
   };

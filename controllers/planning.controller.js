@@ -7,6 +7,8 @@ const Op = require("sequelize");
 
 
 const PlanningService = require("../services/planning.service");
+const CandidateService = require("../services/candidate_profile.service");
+const CompanyService = require("../services/company_profile.service");
 
 exports.generationPlanning = async (req, res) => {
     PlanningService.createPlanning();
@@ -102,7 +104,6 @@ exports.findByUserId = async (req, res) => {
   }
 }
 
-
 exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
   console.log('dans la methode findFreeCompaniesAtGivenPeriod');
 
@@ -143,4 +144,87 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
   } catch (err) {
     throw err;
   }
+}
+
+exports.addMeeting = async (req, res) => {
+  const userIdCandidate = req.body.userIdCandidate;
+  const userIdCompany = req.body.userIdCompany;
+  const period = req.body.period;
+
+  if (!userIdCandidate || !userIdCompany || !period)  {
+    return res.status(400).send("Au moins un champ manquant (userId/period)");
+  }
+
+  //Check if meeting already exist
+  const slot = await Slot.findOne(
+    { where:
+      { userPlanning: userIdCandidate, userMet: userIdCompany } 
+    });
+  if (slot) {
+    return res.status(409).send("Une rencontre est déjà prévue pour ces deux utilisateurs");
+  }
+
+  //Check if candidate exist
+  const userCandidate = await User.findByPk(userIdCandidate);
+  if (!userCandidate) {
+    return res.status(409).send("Le candidat n'existe pas");
+  } else if (userCandidate['dataValues']['role'] != "CANDIDAT") {
+    return res.status(409).send("L'utilisateur " + userIdCandidate +" n'est pas un candidat");
+  }
+
+  //Check if company exist
+  const userCompany = await User.findByPk(userIdCompany);
+  if (!userCompany) {
+    return res.status(409).send("L'entreprise n'existe pas");
+  } else if (userCompany['dataValues']['role'] != "ENTREPRISE") {
+    return res.status(409).send("L'utilisateur " + userIdCompany +" n'est pas une entreprise");
+  }
+
+  //Retrieve company and candidate name
+  const candidate = CandidateService.findById(userIdCandidate);
+  const company = CompanyService.findById(userIdCompany);
+  
+  if (!candidate) {
+    return res.status(409).send("Le candidat n'existe pas");
+  }
+  if (!company) {
+    return res.status(409).send("L'entreprise n'existe pas");
+  }
+
+  try {
+    //slot entreprise
+    const slotValuesA = {
+      userPlanning: userIdCompany,
+      userMet: userIdCandidate,
+      period: period,
+      companyName: company.companyName,
+      candidateName: candidate.firstName + candidate.lastName,
+      logo: company.logo
+  };
+  const slotA = await Slot.create(slotValuesA);
+
+  if (!slotA) {
+    return res.status(409).send("Impossible de créer la rencontre");
+  }
+
+  //slot entreprise
+    const slotValuesB = {
+      userPlanning: userIdCandidate,
+      userMet: userIdCompany,
+      period: period,
+      companyName: company.companyName,
+      candidateName: candidate.firstName + candidate.lastName,
+      logo: company.logo
+    };
+    const slotB = await Slot.create(slotValuesB);
+
+    if (!slotB) {
+      return res.status(409).send("Impossible de créer la rencontre");
+    }
+
+    return res.status(201).send("Rencontre créée avec succès");
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+
 }
