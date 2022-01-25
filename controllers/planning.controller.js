@@ -3,6 +3,8 @@ const Slot = db.slot;
 const CandidateProfile = db.candidate_profiles;
 const CompanyProfile = db.company_profiles;
 const User = db.users;
+const Op = require("sequelize");
+
 
 const PlanningService = require("../services/planning.service");
 
@@ -95,6 +97,49 @@ exports.findByUserId = async (req, res) => {
     }
 
     return res.send(slots);
+  } catch (err) {
+    throw err;
+  }
+}
+
+
+exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
+  console.log('dans la methode findFreeCompaniesAtGivenPeriod');
+
+  const period = req.params.period;
+
+  if (!(period)) {
+    return res.status(400).send("Period is required");
+  }
+
+  try {
+
+    //On recherche les slots de ce planning
+    const idFree = await Slot.findAll(
+      { 
+        where: { period: period, userMet: null},
+        attributes: ['userPlanning']
+    }
+    );
+
+    if (!idFree) {
+      return res.send();
+    }
+
+    const listId = [];
+    for (var i = 0; i < idFree.length ; i ++) {
+      listId[listId.length] = idFree[i]['dataValues']['userPlanning'];
+    }
+    console.log(listId)
+
+    const freeCompanies = await CompanyProfile.findAll({
+      where: { userId: listId
+      },
+      attributes: ['userId', 'companyName']
+    }
+    );
+
+    return res.send(freeCompanies);
   } catch (err) {
     throw err;
   }
