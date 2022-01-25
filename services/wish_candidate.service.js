@@ -3,6 +3,7 @@ const Wish_Candidate = db.wish_candidate;
 const Offer = db.offers;
 const OfferLink = db.offer_links;
 const OfferTag = db.offer_tags;
+const CompanyProfile = db.company_profiles;
 
 exports.update = async (wishId, rank) => {
   try {
@@ -19,7 +20,14 @@ exports.findAllByCandidateId = async (candidateProfileId) => {
       where: { candidateProfileId: candidateProfileId },
       order: [[`rank`, `ASC`]],
       include: [
-        { model: Offer, include: [{ model: OfferLink }, { model: OfferTag }] },
+        {
+          model: Offer,
+          include: [
+            { model: OfferLink },
+            { model: OfferTag },
+            { model: CompanyProfile },
+          ],
+        },
       ],
     });
     return list;
