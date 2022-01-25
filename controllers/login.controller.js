@@ -110,7 +110,7 @@ exports.getUserFromToken = async (req, res) => {
         if (!admin_profile) {
           return res.status(404).send("Pas d'admin trouvé");
         }
-        return res.send(admin_profile);
+        return res.send({user: admin_profile});
       } catch (err) {
         return res.status(500).send(err.message);
       }
