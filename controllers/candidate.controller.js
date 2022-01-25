@@ -372,6 +372,18 @@ exports.uploadCV = async (req, res) => {
           where: { userId: userId },
         }
       );
+      if (
+        checkCandidateProfile.phoneNumber &&
+        checkCandidateProfile.description &&
+        checkCandidateProfile.address
+      ) {
+        CandidateProfile.update(
+          { status: "Complet" },
+          {
+            where: { userId: userId },
+          }
+        );
+      }
       if (deleteOldCV) {
         fs.unlink("data/" + checkCandidateProfile.cv, (err) => {
           if (err) {
