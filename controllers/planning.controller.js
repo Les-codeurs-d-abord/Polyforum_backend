@@ -105,8 +105,6 @@ exports.findByUserId = async (req, res) => {
 }
 
 exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
-  console.log('dans la methode findFreeCompaniesAtGivenPeriod');
-
   const period = req.params.period;
 
   if (!(period)) {
@@ -131,7 +129,6 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
     for (var i = 0; i < idFree.length ; i ++) {
       listId[listId.length] = idFree[i]['dataValues']['userPlanning'];
     }
-    console.log(listId)
 
     const freeCompanies = await CompanyProfile.findAll({
       where: { userId: listId
@@ -147,8 +144,6 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
 }
 
 exports.findFreeCandidatesAtGivenPeriod = async (req, res) => {
-  console.log('dans la methode findFreeCandidatesAtGivenPeriod');
-
   const period = req.params.period;
 
   if (!(period)) {
@@ -172,7 +167,6 @@ exports.findFreeCandidatesAtGivenPeriod = async (req, res) => {
     for (var i = 0; i < idFree.length ; i ++) {
       listId[listId.length] = idFree[i]['dataValues']['userPlanning'];
     }
-    console.log(listId)
 
     const freeCandidates = await CandidateProfile.findAll({
       where: { userId: listId
@@ -188,7 +182,6 @@ exports.findFreeCandidatesAtGivenPeriod = async (req, res) => {
 }
 
 exports.addMeeting = async (req, res) => {
-  console.log(req.body);
 
   const obj = JSON.parse(req.body.data);
   const {
@@ -287,14 +280,11 @@ exports.addMeeting = async (req, res) => {
       candidateName: candidate.firstName + candidate.lastName,
       logo: company.logo
     };
-    console.log(slotValuesB);
     // const slotB = await Slot.create(slotValuesB);
 
     const slotB = await Slot.update(slotValuesB, {
       where: { userPlanning: userIdCandidate, period:period },
     });
-    console.log('apres update')
-    console.log(slotB);
 
     if (!slotB) {
       return res.status(409).send("Impossible de créer la rencontre");
