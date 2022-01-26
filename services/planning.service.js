@@ -14,13 +14,13 @@ exports.createPlanning = async () => {
         order: [
             ['rank', 'ASC'],
         ],
-        attributes: ['id', 'companyId', 'candidateId', 'rank'],
+        attributes: ['id', 'companyProfileId', 'candidateProfileId', 'rank'],
     });
     const wishesCandidates = await Wish_Candidate.findAll({
         order: [
             ['rank', 'ASC'],
         ],
-        attributes: ['id', 'candidateId', 'offerId', 'rank'],
+        attributes: ['id', 'candidateProfileId', 'offerId', 'rank'],
     });
     const allCompanies = await Companies.findAll();
     const allCandidates = await Candidates.findAll();
@@ -59,8 +59,8 @@ exports.createPlanning = async () => {
     //On remplit la matrice avec les voeux qu'ont fait les entreprises
     const costWishCompany = 2;
     for (var w = 0; w < wishesCompanies.length; w++) {
-        const indexCompany = mapCompanyIndex.get(wishesCompanies[w].companyId);
-        const indexCandidate = mapCandidateIndex.get(wishesCompanies[w].candidateId);
+        const indexCompany = mapCompanyIndex.get(wishesCompanies[w].companyProfileId);
+        const indexCandidate = mapCandidateIndex.get(wishesCompanies[w].candidateProfileId);
         matrixWishes[indexCompany][indexCandidate] += costWishCompany;
     }
 
@@ -70,7 +70,7 @@ exports.createPlanning = async () => {
     for (var w = 0; w < wishesCandidates.length; w++) {
         const offer = await Offer.findByPk(wishesCandidates[w].offerId);
         mapOffersCompany.set(offer.id, offer.dataValues.companyProfileId)
-        const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateId);
+        const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateProfileId);
         const indexCompany = mapCompanyIndex.get(offer.dataValues.companyProfileId);
         mapOfferCompany.set(wishesCandidates[w].offerId, offer.dataValues.companyProfileId)
         matrixWishes[indexCompany][indexCandidate] += costWishCandidate;
@@ -93,8 +93,8 @@ exports.createPlanning = async () => {
 
     //On cherche les voeux des entreprises
     for (var w = 0; w < wishesCompanies.length; w++) {
-        const indexCandidate = mapCandidateIndex.get(wishesCompanies[w].candidateId);
-        const indexCompany = mapCompanyIndex.get(wishesCompanies[w].companyId);
+        const indexCandidate = mapCandidateIndex.get(wishesCompanies[w].candidateProfileId);
+        const indexCompany = mapCompanyIndex.get(wishesCompanies[w].companyProfileId);
         
         if (matrixWishes[indexCompany][indexCandidate] == 2) {
             const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[indexCompany], planningCandidate[indexCandidate], nbSlotPerUser);
@@ -108,7 +108,7 @@ exports.createPlanning = async () => {
 
         //On cherche les voeux des candidats
         for (var w = 0; w < wishesCandidates.length; w++) {
-            const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateId);
+            const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateProfileId);
             const indexCompany = mapCompanyIndex.get(mapOffersCompany.get(wishesCandidates[w].offerId));
             
             if (matrixWishes[indexCompany][indexCandidate] == 1) {

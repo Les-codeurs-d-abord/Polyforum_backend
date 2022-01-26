@@ -1,6 +1,9 @@
 const db = require("../models");
 const Wish_Candidate = db.wish_candidate;
 const Offer = db.offers;
+const OfferLink = db.offer_links;
+const OfferTag = db.offer_tags;
+const CompanyProfile = db.company_profiles;
 
 exports.update = async (wishId, rank) => {
   try {
@@ -11,12 +14,21 @@ exports.update = async (wishId, rank) => {
   }
 };
 
-exports.findAllByCandidateId = async (candidateId) => {
+exports.findAllByCandidateId = async (candidateProfileId) => {
   try {
     const list = await Wish_Candidate.findAll({
-      where: { candidateId: candidateId },
+      where: { candidateProfileId: candidateProfileId },
       order: [[`rank`, `ASC`]],
-      include: [{ model: Offer }],
+      include: [
+        {
+          model: Offer,
+          include: [
+            { model: OfferLink },
+            { model: OfferTag },
+            { model: CompanyProfile },
+          ],
+        },
+      ],
     });
     return list;
   } catch (err) {

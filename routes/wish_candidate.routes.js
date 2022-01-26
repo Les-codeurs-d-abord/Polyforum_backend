@@ -5,16 +5,19 @@ module.exports = (app) => {
     const router = require("express").Router();
 
     // Update the wishes' ranks of a candidate
-    router.put("/:candidateId", wishController.update);
+    router.put("/:candidateProfileId", wishController.update);
+
+    // Check if a wish already exists
+    router.get("/check", wishController.checkByCandidateIdAndOfferId);
 
     // Get all the wishes from an candidateId
-    router.get("/:candidateId", wishController.findAllByCandidateId);
+    router.get("/:candidateProfileId", wishController.findAllByCandidateId);
 
     // Add a wish to a candidate
     router.post("", wishController.createWishCandidate);
 
     // Delete a single wish with id
-    router.delete("/:wishId", wishController.deleteById);
+    router.delete("", wishController.delete);
 
     app.use("/api/wishcandidate", router);
 };

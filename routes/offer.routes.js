@@ -7,6 +7,7 @@ module.exports = app => {
   router.post("/:offerId/upload", offer.upload);
   router.get("", offer.getAllOffer);
   router.put("/:offerId", offer.updateOffer)
+  router.delete("/:offerId", offer.deleteOffer)
 
   //offer_tags
   router.post("/tag", offer.createOfferTag);

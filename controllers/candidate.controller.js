@@ -81,7 +81,7 @@ exports.candidateList = async (req, res) => {
             SELECT COUNT(*)
             FROM wish_candidates AS wish_candidate
             WHERE
-            wish_candidate.candidateId = candidate_profile.id
+            wish_candidate.candidateProfileId = candidate_profile.id
         )`),
             "wishesCount",
           ],
@@ -334,7 +334,6 @@ exports.uploadCV = async (req, res) => {
     },
     filename: function (req, file, cb) {
       extension = file.originalname.split(".")[1];
-      console.log(extension);
       deleteOldCV = checkCandidateProfile.cv
         ? extension != checkCandidateProfile.cv.split(".")[1]
         : false;
@@ -386,6 +385,18 @@ exports.uploadCV = async (req, res) => {
           where: { userId: userId },
         }
       );
+      if (
+        checkCandidateProfile.phoneNumber &&
+        checkCandidateProfile.description &&
+        checkCandidateProfile.address
+      ) {
+        CandidateProfile.update(
+          { status: "Complet" },
+          {
+            where: { userId: userId },
+          }
+        );
+      }
       if (deleteOldCV) {
         fs.unlink("data/" + checkCandidateProfile.cv, (err) => {
           if (err) {

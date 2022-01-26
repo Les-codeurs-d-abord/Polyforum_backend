@@ -11,6 +11,7 @@ const fs = require("fs");
 
 // Create an offer
 exports.createOffer = async (req, res) => {
+  const obj = JSON.parse(req.body.data)
   const {
     companyProfileId,
     name,
@@ -20,7 +21,7 @@ exports.createOffer = async (req, res) => {
     address,
     linksList,
     tagsList,
-  } = req.body;
+  } = obj;
 
   // Validate input
   if (
@@ -74,7 +75,8 @@ exports.createOffer = async (req, res) => {
 // Update  an offer
 exports.updateOffer = async (req, res) => {
   const offerId = req.params.offerId;
-  const { name, description, phoneNumber, email, address } = req.body;
+  const obj = JSON.parse(req.body)
+  const { name, description, phoneNumber, email, address, tags, links } = obj;
 
   // Validate input
   if (!(name && description && phoneNumber && email && address)) {
@@ -94,19 +96,29 @@ exports.updateOffer = async (req, res) => {
       where: { id: offerId },
     });
 
+    // Delete previous tags
+    await Offer_Tags.destroy({
+      where: { offerId: offerId },
+    });
+
     // Create new tags
-    for (let i = 0; i < tagsList.length; i++) {
+    for (let i = 0; i < tags.length; i++) {
       await Offer_Tags.create({
         offerId: offer.id,
-        label: tagsList[i],
+        label: tags[i],
       });
     }
 
+    // Delete previous links
+    await Offer_Links.destroy({
+      where: { offerId: offerId },
+    });
+
     // Create new links
-    for (let i = 0; i < linksList.length; i++) {
+    for (let i = 0; i < links.length; i++) {
       await Offer_Links.create({
         offerId: offer.id,
-        label: linksList[i],
+        label: links[i],
       });
     }
     return res.send(offer);
@@ -300,6 +312,25 @@ exports.createOfferLink = async (req, res) => {
   Offer_Links.create(offerLink)
     .then((value) => res.status(201).json({ value }))
     .catch((error) => res.status(400).json({ error }));
+};
+
+exports.deleteOffer = async (req, res) => {
+  const offerId = req.params.offerId;
+
+  try {
+    const offerDeleted = await Offers.destroy({
+      where: { id: offerId },
+    });
+    if (offerDeleted) {
+      // Offer deleted
+      return res.status(200).send("Offre supprimée");
+    } else {
+      // Offer not found
+      return res.status(404).send("Pas d'offre trouvée");
+    }
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
 };
 
 //Offer Tags//

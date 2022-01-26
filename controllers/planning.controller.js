@@ -17,7 +17,7 @@ exports.generationPlanning = async (req, res) => {
 
 exports.findByCandidateId = async (req, res) => {
   try {
-    const candidateProfileId = req.params.candidateId;
+    const candidateProfileId = req.params.candidateProfileId;
 
     //On recherche le userId à partir de l'id du candidat
     const candidate_profile = await CandidateProfile.findOne({
@@ -53,7 +53,7 @@ exports.findByCandidateId = async (req, res) => {
 exports.findByCompanyId = async (req, res) => {
   
   try {
-    const companyProfileId = req.params.companyId;
+    const companyProfileId = req.params.companyProfileId;
 
     //On recherche le userId à partir de l'id du candidat
     const company_profile = await CompanyProfile.findOne({

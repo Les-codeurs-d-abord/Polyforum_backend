@@ -6,9 +6,9 @@ module.exports = app => {
 
     router.get("/:userId", planning.findByUserId);
 
-    router.get('/candidate/:candidateId', planning.findByCandidateId);
+    router.get('/candidate/:candidateProfileId', planning.findByCandidateId);
 
-    router.get('/company/:companyId', planning.findByCompanyId);
+    router.get('/company/:companyProfileId', planning.findByCompanyId);
 
     router.get('/freecompanies/:period', planning.findFreeCompaniesAtGivenPeriod);
 
