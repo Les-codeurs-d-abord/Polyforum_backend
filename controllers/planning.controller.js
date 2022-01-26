@@ -146,6 +146,47 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
   }
 }
 
+exports.findFreeCandidatesAtGivenPeriod = async (req, res) => {
+  console.log('dans la methode findFreeCandidatesAtGivenPeriod');
+
+  const period = req.params.period;
+
+  if (!(period)) {
+    return res.status(400).send("Period is required");
+  }
+
+  try {
+
+    const idFree = await Slot.findAll(
+      { 
+        where: { period: period, userMet: null},
+        attributes: ['userPlanning']
+    }
+    );
+
+    if (!idFree) {
+      return res.send();
+    }
+
+    const listId = [];
+    for (var i = 0; i < idFree.length ; i ++) {
+      listId[listId.length] = idFree[i]['dataValues']['userPlanning'];
+    }
+    console.log(listId)
+
+    const freeCandidates = await CandidateProfile.findAll({
+      where: { userId: listId
+      },
+      attributes: ['userId', 'firstName', 'lastName']
+    }
+    );
+
+    return res.send(freeCandidates);
+  } catch (err) {
+    throw err;
+  }
+}
+
 exports.addMeeting = async (req, res) => {
   console.log(req.body);
 

@@ -12,6 +12,8 @@ module.exports = app => {
 
     router.get('/freecompanies/:period', planning.findFreeCompaniesAtGivenPeriod);
 
+    router.get('/freecandidates/:period', planning.findFreeCandidatesAtGivenPeriod);
+
     router.post("/meeting", planning.addMeeting);
 
     router.delete("/slot", planning.deleteSlot);
