@@ -75,7 +75,8 @@ exports.createOffer = async (req, res) => {
 // Update  an offer
 exports.updateOffer = async (req, res) => {
   const offerId = req.params.offerId;
-  const { name, description, phoneNumber, email, address } = req.body;
+  const obj = JSON.parse(req.body)
+  const { name, description, phoneNumber, email, address, tags, links } = obj;
 
   // Validate input
   if (!(name && description && phoneNumber && email && address)) {
@@ -95,19 +96,29 @@ exports.updateOffer = async (req, res) => {
       where: { id: offerId },
     });
 
+    // Delete previous tags
+    await Offer_Tags.destroy({
+      where: { offerId: offerId },
+    });
+
     // Create new tags
-    for (let i = 0; i < tagsList.length; i++) {
+    for (let i = 0; i < tags.length; i++) {
       await Offer_Tags.create({
         offerId: offer.id,
-        label: tagsList[i],
+        label: tags[i],
       });
     }
 
+    // Delete previous links
+    await Offer_Links.destroy({
+      where: { offerId: offerId },
+    });
+
     // Create new links
-    for (let i = 0; i < linksList.length; i++) {
+    for (let i = 0; i < links.length; i++) {
       await Offer_Links.create({
         offerId: offer.id,
-        label: linksList[i],
+        label: links[i],
       });
     }
     return res.send(offer);
