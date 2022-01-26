@@ -266,11 +266,14 @@ exports.addMeeting = async (req, res) => {
 }
 
 exports.deleteSlot = async (req, res) => {
-  const candidateUserId = req.body.candidateUserId;
-  const companyUserId = req.body.companyUserId;
-  const period = req.body.period;
+  const obj = JSON.parse(req.body.data);
+  const {
+    userIdCandidate,
+    userIdCompany,
+    period
+  } = obj;
 
-  if (!candidateUserId || !companyUserId || !period) {
+  if (!userIdCandidate || !userIdCompany || !period) {
     return res.status(400).send("Au moins un champ manquant (id/period)");
   }
 
@@ -278,8 +281,8 @@ exports.deleteSlot = async (req, res) => {
   const slotToDelete = await Slot.findAll({
     where: { 
       [Sequelize.Op.or]: [
-        { userPlanning: candidateUserId, userMet: companyUserId, period: period },
-        { userPlanning: companyUserId, userMet: candidateUserId, period: period }
+        { userPlanning: userIdCandidate, userMet: userIdCompany, period: period },
+        { userPlanning: userIdCompany, userMet: userIdCandidate, period: period }
       ]
      },
   });
@@ -298,8 +301,8 @@ exports.deleteSlot = async (req, res) => {
   const result = await Slot.update(newSlotValues, {
     where: { 
       [Sequelize.Op.or]: [
-        { userPlanning: candidateUserId, userMet: companyUserId, period: period },
-        { userPlanning: companyUserId, userMet: candidateUserId, period: period }
+        { userPlanning: userIdCandidate, userMet: userIdCompany, period: period },
+        { userPlanning: userIdCompany, userMet: userIdCandidate, period: period }
       ]
      },
   });
