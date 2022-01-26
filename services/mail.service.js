@@ -363,3 +363,43 @@ exports.sendWishReminderCompanies = async (address) => {
     }
   });
 };
+
+
+exports.sendSatisfactionSurvey = async (surveyLink, address) => {
+  const mailOptions = {
+    from: '"Polyforum" <' + process.env.POLYFORUM_MAIL + ">", // sender address
+    to: address, // list of receivers
+    subject: "Questionaire de satisfaction", // Subject line
+    html:
+      "<h1>Qu'avez vous pensé du forum ?</h1>" +
+      "<p>Bonjour,</p>" +
+      "<p>Suite à l'utilisation du forum, nous souhaiterions avoir votre avis sur les points à améliorer pour le futur</p>" +
+      "<p>En cliquant sur <a href=\""+surveyLink+"\">ce lien</a>, vous accéderez à un rapide questionnaire à compléter</p>" +
+      "<p>Merci et bonne journée !</p>" +
+      '<table id="footer" style="height: auto; width: 100%;">' +
+      "<tbody>" +
+      "<tr>" +
+      '<td  style="width: 50%; text-align: center;">' +
+      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      "</td>" +
+      '<td style="width: 50%;">' +
+      '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
+      '<div style="margin-left: 10px; font-weight: bold;">' +
+      "<p>L'équipe PolyForum</p>" +
+      "</div>" +
+      "</div>" +
+      "</td>" +
+      "</tr>" +
+      "</tbody>" +
+      "</table>",
+    // html body
+  };
+
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      throw error;
+    } else {
+      console.log("Email sent: " + info.response);
+    }
+  });
+};

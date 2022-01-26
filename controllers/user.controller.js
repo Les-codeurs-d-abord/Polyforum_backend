@@ -5,6 +5,7 @@ const UserService = require("../services/user.service");
 const MailService = require("../services/mail.service");
 const PhaseService = require("../services/phase.service");
 const bcrypt = require("bcrypt");
+const { Sequelize } = require("../models");
 
 require("dotenv").config();
 
@@ -167,4 +168,24 @@ exports.sendReminders = async (req, res) => {
   } catch (err) {
     return res.status(500).send(err.message);
   }
+};
+
+exports.sendSatisfactionSurvey = async (req, res) => {
+  const surveyLink = req.body.surveyLink;
+  if (!surveyLink) {
+    return res.status(400).send("Le lien du questionnaire est manquant");
+  }
+
+  const candidatesAndCompanies = await User.findAll({
+    where: {
+      role: { [Sequelize.Op.or]: [User.ROLES.CANDIDATE, User.ROLES.COMPANY] },
+    },
+  });
+
+  await Promise.all(
+    candidatesAndCompanies.map(async (user) => {
+      // await MailService.sendSatisfactionSurvey(surveyLink, user.email);
+    })
+  );
+  return res.send("Mails envoyés");
 };

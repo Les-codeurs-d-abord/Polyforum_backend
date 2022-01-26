@@ -18,6 +18,9 @@ module.exports = (app) => {
   // Send reminder mails to candidates and companies
   router.get("/sendReminders", users.sendReminders);
 
+  // Send satisfaction survey to candidates and companies
+  router.get("/sendSatisfactionSurvey", users.sendSatisfactionSurvey);
+
   // Get a user
   router.get("/:userId", users.findById);
 
