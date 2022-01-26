@@ -270,6 +270,10 @@ exports.deleteSlot = async (req, res) => {
   const companyUserId = req.body.companyUserId;
   const period = req.body.period;
 
+  if (!candidateUserId || !companyUserId || !period) {
+    return res.status(400).send("Au moins un champ manquant (id/period)");
+  }
+
   //Check if slots exist
   const slotToDelete = await Slot.findAll({
     where: { 
@@ -291,17 +295,6 @@ exports.deleteSlot = async (req, res) => {
     logo: null
   };
 
-  // const slotAll = await Slot.findAll({
-  //   where: { 
-  //     [Sequelize.Op.or]: [
-  //       { userPlanning: candidateUserId, userMet: companyUserId, period: period },
-  //       { userPlanning: companyUserId, userMet: candidateUserId, period: period }
-  //     ]
-  //    },
-  //   });
-
-  //   console.log(slotAll)
-
   const result = await Slot.update(newSlotValues, {
     where: { 
       [Sequelize.Op.or]: [
@@ -311,5 +304,5 @@ exports.deleteSlot = async (req, res) => {
      },
   });
 
-  // console.log(result)
+  return res.status(201).send("Rencontre supprimée avec succès");
 }
