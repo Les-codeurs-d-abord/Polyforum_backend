@@ -334,7 +334,6 @@ exports.uploadCV = async (req, res) => {
     },
     filename: function (req, file, cb) {
       extension = file.originalname.split(".")[1];
-      console.log(extension);
       deleteOldCV = checkCandidateProfile.cv
         ? extension != checkCandidateProfile.cv.split(".")[1]
         : false;
