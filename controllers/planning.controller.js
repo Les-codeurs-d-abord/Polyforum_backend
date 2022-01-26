@@ -8,6 +8,8 @@ const PlanningService = require("../services/planning.service");
 const CandidateService = require("../services/candidate_profile.service");
 const CompanyService = require("../services/company_profile.service");
 
+const { Sequelize } = require("../models");
+
 exports.generationPlanning = async (req, res) => {
     PlanningService.createPlanning();
     return res.send("Planning généré");
@@ -154,10 +156,6 @@ exports.addMeeting = async (req, res) => {
     period
   } = obj;
 
-  console.log(userIdCandidate);
-  console.log(userIdCompany);
-  console.log(period);
-
   if (!userIdCandidate || !userIdCompany || !period)  {
     return res.status(400).send("Au moins un champ manquant (userId/period)");
   }
@@ -265,5 +263,53 @@ exports.addMeeting = async (req, res) => {
   } catch (err) {
     return res.status(500).send(err.message);
   }
+}
 
+exports.deleteSlot = async (req, res) => {
+  const candidateUserId = req.body.candidateUserId;
+  const companyUserId = req.body.companyUserId;
+  const period = req.body.period;
+
+  //Check if slots exist
+  const slotToDelete = await Slot.findAll({
+    where: { 
+      [Sequelize.Op.or]: [
+        { userPlanning: candidateUserId, userMet: companyUserId, period: period },
+        { userPlanning: companyUserId, userMet: candidateUserId, period: period }
+      ]
+     },
+  });
+
+  if (!slotToDelete || !(slotToDelete.length == 2)) {
+    return res.status(409).send("Ce créneau n'existe pas");
+  }
+
+  const newSlotValues = {
+    userMet: null,
+    companyName: null,
+    candidateName: null,
+    logo: null
+  };
+
+  // const slotAll = await Slot.findAll({
+  //   where: { 
+  //     [Sequelize.Op.or]: [
+  //       { userPlanning: candidateUserId, userMet: companyUserId, period: period },
+  //       { userPlanning: companyUserId, userMet: candidateUserId, period: period }
+  //     ]
+  //    },
+  //   });
+
+  //   console.log(slotAll)
+
+  const result = await Slot.update(newSlotValues, {
+    where: { 
+      [Sequelize.Op.or]: [
+        { userPlanning: candidateUserId, userMet: companyUserId, period: period },
+        { userPlanning: companyUserId, userMet: candidateUserId, period: period }
+      ]
+     },
+  });
+
+  // console.log(result)
 }

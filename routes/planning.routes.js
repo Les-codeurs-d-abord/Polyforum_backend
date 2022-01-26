@@ -14,6 +14,8 @@ module.exports = app => {
 
     router.post("/meeting", planning.addMeeting);
 
+    router.delete("/slot", planning.deleteSlot);
+
     app.use('/api/planning', router);
   };
   
