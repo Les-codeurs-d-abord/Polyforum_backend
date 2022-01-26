@@ -172,6 +172,15 @@ exports.companyList = async (req, res) => {
         [
           Sequelize.literal(`(
             SELECT COUNT(*)
+          FROM wish_companies AS wish_company
+          WHERE
+          wish_company.companyProfileId = company_profile.id
+      )`),
+          "wishesCount",
+        ],
+        [
+          Sequelize.literal(`(
+            SELECT COUNT(*)
             FROM offers AS offer
             WHERE
                 offer.companyProfileId = company_profile.id
