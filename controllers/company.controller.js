@@ -286,7 +286,7 @@ exports.findOffersById = async (req, res) => {
   try {
     const offers = await Offer.findAll({
       where: { companyProfileId: checkCompanyProfile.id },
-      include: [{ model: OfferLink }, { model: OfferTag }],
+      include: [{ model: OfferLink }, { model: OfferTag }, {model: CompanyProfile}],
     });
 
     return res.send(offers);

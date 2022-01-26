@@ -43,8 +43,7 @@ exports.createWishCandidate = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const obj = JSON.parse(req.body.data);
-  const wishList = obj.wishList;
+  const wishList = JSON.parse(req.body.data);
   const candidateProfileId = req.params.candidateProfileId;
 
   if (!wishList) {
@@ -90,9 +89,7 @@ exports.findAllByCandidateId = async (req, res) => {
 };
 
 exports.checkByCandidateIdAndOfferId = async (req, res) => {
-  // console.log(req.params);
-  // console.log(req);
-  const { offerId, candidateProfileId } = req.body;
+  const { offerId, candidateProfileId } = req.query;
 
   if (!(offerId && candidateProfileId)) {
     return res.status(400).send("All input required");
