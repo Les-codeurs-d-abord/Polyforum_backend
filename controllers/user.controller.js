@@ -1,5 +1,7 @@
 const db = require("../models");
 const User = db.users;
+const CompanyProfile = db.company_profiles;
+const CandidateProfile = db.candidate_profiles;
 
 const UserService = require("../services/user.service");
 const MailService = require("../services/mail.service");
@@ -151,15 +153,129 @@ exports.findAdmins = async (req, res) => {
   }
 };
 
-exports.sendReminders = async (req, res) => {
+exports.sendRemindersCandidates = async (req, res) => {
   try {
     const phase = await PhaseService.getCurrentPhase();
     switch (phase.currentPhase) {
       case "INSCRIPTION":
-        await MailService.sendProfileReminders();
+        const lateCandidates = await CandidateProfile.findAll({
+          where: {
+            [Sequelize.Op.or]: [
+              { phoneNumber: null },
+              { description: null },
+              { cv: null },
+            ],
+          },
+          include: [{ model: User }],
+        });
+
+        await Promise.all(
+          lateCandidates.map(async (candidate) => {
+            console.log(candidate.user.email)
+            // await MailService.sendProfileReminderCandidates(candidate.user.email);
+          })
+        );
         break;
       case "VOEUX":
-        await MailService.sendWishReminders();
+        const wishlessCandidates = await CandidateProfile.findAll({
+          include: [{ model: User, attributes: ["id", "email"] }],
+          attributes: [
+            [
+              Sequelize.literal(`(
+              SELECT COUNT(*)
+              FROM wish_candidates AS wish_candidate
+              WHERE
+              wish_candidate.candidateProfileId = candidate_profile.id
+          )`),
+              "wishesCount",
+            ],
+          ],
+          raw: true,
+          nest: true,
+        });
+
+        await Promise.all(
+          wishlessCandidates.map(async (candidate) => {
+            if (candidate.wishesCount === 0) {
+              console.log(candidate.user.email)
+              // await MailService.sendWishReminderCandidates(candidate.user.email);
+            }
+          })
+        );
+        break;
+      default:
+        res.status(400).send("Pas de rappel prévu durant cette phase");
+    }
+    return res.send();
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
+};
+
+exports.sendRemindersCompanies = async (req, res) => {
+  try {
+    const phase = await PhaseService.getCurrentPhase();
+    switch (phase.currentPhase) {
+      case "INSCRIPTION":
+        const lateCompanies = await CompanyProfile.findAll({
+          include: [{ model: User, attributes: ["id", "email"] }],
+          attributes: [
+            "phoneNumber",
+            "description",
+            [
+              // Note the wrapping parentheses in the call below!
+              Sequelize.literal(`(
+                SELECT COUNT(*)
+                FROM offers AS offer
+                WHERE
+                    offer.companyProfileId = company_profile.id
+            )`),
+              "offersCount",
+            ],
+          ],
+        });
+
+        await Promise.all(
+          lateCompanies.map(async (company) => {
+            if (
+              !(
+                company.phoneNumber &&
+                company.description &&
+                company.offersCount !== 0
+              )
+            ) {
+              console.log(company.user.email)
+              // await MailService.sendProfileReminderCompanies(company.user.email);
+            }
+          })
+        );
+        break;
+      case "VOEUX":
+        const wishlessCompanies = await CompanyProfile.findAll({
+          include: [{ model: User, attributes: ["id", "email"] }],
+          attributes: [
+            [
+              Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM wish_companies AS wish_company
+            WHERE
+            wish_company.companyProfileId = company_profile.id
+            )`),
+              "wishesCount",
+            ],
+          ],
+          raw: true,
+          nest: true,
+        });
+
+        await Promise.all(
+          wishlessCompanies.map(async (company) => {
+            if (company.wishesCount === 0) {
+              console.log(company.user.email)
+              // await MailService.sendWishReminderCompanies(company.user.email);
+            }
+          })
+        );
         break;
       default:
         res.status(400).send("Pas de rappel prévu durant cette phase");

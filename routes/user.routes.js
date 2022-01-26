@@ -15,8 +15,11 @@ module.exports = (app) => {
   // Get all admins
   router.get("/admins", users.findAdmins);
 
-  // Send reminder mails to candidates and companies
-  router.post("/sendReminders", users.sendReminders);
+  // Send reminder mails to candidates
+  router.post("/sendRemindersCandidates", users.sendRemindersCandidates);
+
+  // Send reminder mails to companies
+  router.post("/sendRemindersCompanies", users.sendRemindersCompanies);
 
   // Send satisfaction survey to candidates and companies
   router.post("/sendSatisfactionSurvey", users.sendSatisfactionSurvey);
