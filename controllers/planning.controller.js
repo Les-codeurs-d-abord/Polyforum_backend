@@ -3,8 +3,6 @@ const Slot = db.slot;
 const CandidateProfile = db.candidate_profiles;
 const CompanyProfile = db.company_profiles;
 const User = db.users;
-const Op = require("sequelize");
-
 
 const PlanningService = require("../services/planning.service");
 const CandidateService = require("../services/candidate_profile.service");
@@ -147,9 +145,18 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
 }
 
 exports.addMeeting = async (req, res) => {
-  const userIdCandidate = req.body.userIdCandidate;
-  const userIdCompany = req.body.userIdCompany;
-  const period = req.body.period;
+  console.log(req.body);
+
+  const obj = JSON.parse(req.body.data);
+  const {
+    userIdCandidate,
+    userIdCompany,
+    period
+  } = obj;
+
+  console.log(userIdCandidate);
+  console.log(userIdCompany);
+  console.log(period);
 
   if (!userIdCandidate || !userIdCompany || !period)  {
     return res.status(400).send("Au moins un champ manquant (userId/period)");
@@ -181,8 +188,8 @@ exports.addMeeting = async (req, res) => {
   }
 
   //Retrieve company and candidate name
-  const candidate = CandidateService.findById(userIdCandidate);
-  const company = CompanyService.findById(userIdCompany);
+  const candidate = await CandidateService.findById(userIdCandidate);
+  const company = await CompanyService.findById(userIdCompany);
   
   if (!candidate) {
     return res.status(409).send("Le candidat n'existe pas");
@@ -192,31 +199,63 @@ exports.addMeeting = async (req, res) => {
   }
 
   try {
-    //slot entreprise
+
+    //slot entreprise\\
+
+    //Check if is there is a free slot
+    const olderSlotA = await Slot.findOne({
+      where: {
+        period: period,
+        userPlanning: userIdCompany
+      }
+    });
+
+    if (!olderSlotA) {
+      return res.status(409).send("Le planning n'était pas généré par l'entreprise");
+    }
+
     const slotValuesA = {
-      userPlanning: userIdCompany,
       userMet: userIdCandidate,
-      period: period,
       companyName: company.companyName,
       candidateName: candidate.firstName + candidate.lastName,
       logo: company.logo
   };
-  const slotA = await Slot.create(slotValuesA);
+  // const slotA = await Slot.create(slotValuesA);
+
+  const slotA = await Slot.update(slotValuesA, {
+    where: { userPlanning: userIdCompany, period:period },
+  });
 
   if (!slotA) {
     return res.status(409).send("Impossible de créer la rencontre");
   }
 
-  //slot entreprise
+  //slot candidate
+      //Check if is there is a free slot
+      const olderSlotB = await Slot.findOne({
+        where: {
+          period: period,
+          userPlanning: userIdCandidate
+        }
+      });
+  
+      if (!olderSlotB) {
+        return res.status(409).send("Le planning n'était pas généré par le candidat");
+      }
     const slotValuesB = {
-      userPlanning: userIdCandidate,
       userMet: userIdCompany,
-      period: period,
       companyName: company.companyName,
       candidateName: candidate.firstName + candidate.lastName,
       logo: company.logo
     };
-    const slotB = await Slot.create(slotValuesB);
+    console.log(slotValuesB);
+    // const slotB = await Slot.create(slotValuesB);
+
+    const slotB = await Slot.update(slotValuesB, {
+      where: { userPlanning: userIdCandidate, period:period },
+    });
+    console.log('apres update')
+    console.log(slotB);
 
     if (!slotB) {
       return res.status(409).send("Impossible de créer la rencontre");
