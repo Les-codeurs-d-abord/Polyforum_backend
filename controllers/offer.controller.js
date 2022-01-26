@@ -11,6 +11,7 @@ const fs = require("fs");
 
 // Create an offer
 exports.createOffer = async (req, res) => {
+  const obj = JSON.parse(req.body.data)
   const {
     companyProfileId,
     name,
@@ -20,7 +21,7 @@ exports.createOffer = async (req, res) => {
     address,
     linksList,
     tagsList,
-  } = req.body;
+  } = obj;
 
   // Validate input
   if (
@@ -300,6 +301,25 @@ exports.createOfferLink = async (req, res) => {
   Offer_Links.create(offerLink)
     .then((value) => res.status(201).json({ value }))
     .catch((error) => res.status(400).json({ error }));
+};
+
+exports.deleteOffer = async (req, res) => {
+  const offerId = req.params.offerId;
+
+  try {
+    const offerDeleted = await Offers.destroy({
+      where: { id: offerId },
+    });
+    if (offerDeleted) {
+      // Offer deleted
+      return res.status(200).send("Offre supprimée");
+    } else {
+      // Offer not found
+      return res.status(404).send("Pas d'offre trouvée");
+    }
+  } catch (err) {
+    return res.status(500).send(err.message);
+  }
 };
 
 //Offer Tags//
