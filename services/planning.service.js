@@ -61,7 +61,9 @@ exports.createPlanning = async () => {
     for (var w = 0; w < wishesCompanies.length; w++) {
         const indexCompany = mapCompanyIndex.get(wishesCompanies[w].companyProfileId);
         const indexCandidate = mapCandidateIndex.get(wishesCompanies[w].candidateProfileId);
-        matrixWishes[indexCompany][indexCandidate] += costWishCompany;
+        if (matrixWishes[indexCompany][indexCandidate] == 0) {
+            matrixWishes[indexCompany][indexCandidate] += costWishCompany;
+        }
     }
 
     //On remplit la matrice avec les voeux qu'ont fait les candidats
@@ -72,9 +74,13 @@ exports.createPlanning = async () => {
         mapOffersCompany.set(offer.id, offer.dataValues.companyProfileId)
         const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateProfileId);
         const indexCompany = mapCompanyIndex.get(offer.dataValues.companyProfileId);
-        mapOfferCompany.set(wishesCandidates[w].offerId, offer.dataValues.companyProfileId)
-        matrixWishes[indexCompany][indexCandidate] += costWishCandidate;
+        mapOfferCompany.set(wishesCandidates[w].offerId, offer.dataValues.companyProfileId);
+        if (matrixWishes[indexCompany][indexCandidate]%2 == 0) {
+            matrixWishes[indexCompany][indexCandidate] += costWishCandidate;
+        }
     }
+
+    console.log(matrixWishes);
 
     //On cherche les voeux communs aux deux parties
     for (var w = 0; w < allCompanies.length; w++) {
@@ -141,7 +147,7 @@ exports.createPlanning = async () => {
             if (planningCompany[w][s]) {
                 const idCandidate = mapCandidateUserIdToCandidateId.get(planningCompany[w][s]);
                 const candidate = allCandidates[mapCandidateIndex.get(idCandidate)];
-                const nameCandidate = candidate.firstName + candidate.lastName;
+                const nameCandidate = candidate.firstName +" " + candidate.lastName;
 
                 const slotValues = {
                     userPlanning: company.userId,
@@ -174,7 +180,7 @@ exports.createPlanning = async () => {
                 const idCompany = mapCompanyUserIdToCompanyId.get(planningCandidate[w][s]);
 
                 const company = allCompanies[mapCompanyIndex.get(idCompany)];
-                const nameCandidate  = candidate.firstName.concat(" ", candidate.lastName);
+                const nameCandidate = candidate.firstName +" " + candidate.lastName;
 
                 const slotValues = {
                     userPlanning: candidate.userId,
