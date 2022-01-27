@@ -4,6 +4,8 @@ const User = db.users;
 const CandidateProfile = db.candidate_profiles;
 const CandidateLink = db.candidate_links;
 const CandidateTag = db.candidate_tags;
+const WishCandidate = db.wish_candidate;
+const WishCompany = db.wish_company;
 
 const UserService = require("../services/user.service");
 const CandidateProfileService = require("../services/candidate_profile.service");
@@ -120,6 +122,27 @@ exports.deleteById = async (req, res) => {
     if (!checkCandidateProfile) {
       return res.status(409).send("Ce candidat n'existe pas");
     }
+
+    await WishCandidate.destroy({
+      where: { candidateProfileId: checkCandidateProfile.id },
+    });
+
+    const wishesCompanies = await WishCompany.findAll({
+      where: { candidateProfileId: checkCandidateProfile.id },
+    });
+
+    await Promise.all(wishesCompanies.map(async (wishCompany) => {
+      await WishCompany.decrement(
+        { rank: 1 },
+        {
+          where: {
+            rank: { [Sequelize.Op.gt]: wishCompany.rank },
+            companyProfileId: wishCompany.companyProfileId
+          },
+        }
+      );
+      await WishCompany.destroy({where: {id: wishCompany.id}})
+    }))
 
     await CandidateLink.destroy({
       where: { candidateProfileId: checkCandidateProfile.id },
