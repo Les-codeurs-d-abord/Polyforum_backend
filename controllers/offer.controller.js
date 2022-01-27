@@ -19,8 +19,8 @@ exports.createOffer = async (req, res) => {
     phoneNumber,
     email,
     address,
-    linksList,
-    tagsList,
+    links,
+    tags,
   } = obj;
 
   // Validate input
@@ -32,8 +32,8 @@ exports.createOffer = async (req, res) => {
       email &&
       phoneNumber &&
       address &&
-      linksList &&
-      tagsList
+      links &&
+      tags
     )
   ) {
     return res.status(400).send("All input is required");
@@ -52,18 +52,18 @@ exports.createOffer = async (req, res) => {
     const offer = await Offers.create(offerData);
 
     // Create new tags
-    for (let i = 0; i < tagsList.length; i++) {
+    for (let i = 0; i < tags.length; i++) {
       await Offer_Tags.create({
         offerId: offer.id,
-        label: tagsList[i],
+        label: tags[i],
       });
     }
 
     // Create new links
-    for (let i = 0; i < linksList.length; i++) {
+    for (let i = 0; i < links.length; i++) {
       await Offer_Links.create({
         offerId: offer.id,
-        label: linksList[i],
+        label: links[i],
       });
     }
     return res.send(offer);
@@ -74,9 +74,18 @@ exports.createOffer = async (req, res) => {
 
 // Update  an offer
 exports.updateOffer = async (req, res) => {
+  const obj = JSON.parse(req.body.data)
+  const {
+    name,
+    description,
+    phoneNumber,
+    email,
+    address,
+    links,
+    tags,
+  } = obj;
+
   const offerId = req.params.offerId;
-  const obj = JSON.parse(req.body)
-  const { name, description, phoneNumber, email, address, tags, links } = obj;
 
   // Validate input
   if (!(name && description && phoneNumber && email && address)) {
