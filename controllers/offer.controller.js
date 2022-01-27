@@ -74,9 +74,18 @@ exports.createOffer = async (req, res) => {
 
 // Update  an offer
 exports.updateOffer = async (req, res) => {
-  const offerId = req.params.offerId;
   const obj = JSON.parse(req.body.data)
-  const { name, description, phoneNumber, email, address, tags, links } = obj;
+  const {
+    name,
+    description,
+    phoneNumber,
+    email,
+    address,
+    links,
+    tags,
+  } = obj;
+
+  const offerId = req.params.offerId;
 
   // Validate input
   if (!(name && description && phoneNumber && email && address)) {
