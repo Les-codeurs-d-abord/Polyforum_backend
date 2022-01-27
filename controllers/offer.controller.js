@@ -158,7 +158,8 @@ exports.upload = async (req, res) => {
       cb(null, "data/offerFiles");
     },
     filename: function (req, file, cb) {
-      extension = file.originalname.split(".")[1];
+      const nameParts = file.originalname.split("."); 
+      extension = nameParts[nameParts.length - 1].toLowerCase();
       deleteOldFile = checkOffer.offerFile
         ? extension != checkOffer.offerFile.split(".")[1]
         : false;

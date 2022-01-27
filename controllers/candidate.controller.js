@@ -268,7 +268,8 @@ exports.uploadLogo = async (req, res) => {
       cb(null, "data/candidateLogos");
     },
     filename: function (req, file, cb) {
-      extension = file.originalname.split(".")[1];
+      const nameParts = file.originalname.split("."); 
+      extension = nameParts[nameParts.length - 1].toLowerCase();
       deleteOldLogo = checkCandidateProfile.logo
         ? extension != checkCandidateProfile.logo.split(".")[1]
         : false;
@@ -356,7 +357,8 @@ exports.uploadCV = async (req, res) => {
       cb(null, "data/candidateCV");
     },
     filename: function (req, file, cb) {
-      extension = file.originalname.split(".")[1];
+      const nameParts = file.originalname.split("."); 
+      extension = nameParts[nameParts.length - 1].toLowerCase();
       deleteOldCV = checkCandidateProfile.cv
         ? extension != checkCandidateProfile.cv.split(".")[1]
         : false;

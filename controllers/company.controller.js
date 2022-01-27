@@ -215,7 +215,8 @@ exports.uploadLogo = async (req, res) => {
       cb(null, "data/companyLogos");
     },
     filename: function (req, file, cb) {
-      extension = file.originalname.split(".")[1];
+      const nameParts = file.originalname.split("."); 
+      extension = nameParts[nameParts.length - 1].toLowerCase();
       deleteOldLogo = checkCompanyProfile.logo
         ? extension != checkCompanyProfile.logo.split(".")[1]
         : false;
