@@ -83,6 +83,29 @@ exports.findAllByCompanyId = async (req, res) => {
   }
 };
 
+exports.checkByCandidateIdAndCompanyId = async (req, res) => {
+  const { companyProfileId, candidateProfileId } = req.query;
+
+  if (!(companyProfileId && candidateProfileId)) {
+    return res.status(400).send("All input required");
+  }
+
+  try {
+    const checkWish = await Wish_Company.findOne({
+      where: {
+        companyProfileId: companyProfileId,
+        candidateProfileId: candidateProfileId,
+      },
+    });
+    if (checkWish) {
+      return res.send();
+    }
+    res.status(404).send();
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
 exports.delete = async (req, res) => {
   const { companyProfileId, candidateProfileId } = req.body;
 
@@ -120,3 +143,4 @@ exports.delete = async (req, res) => {
     return res.status(500).send(err.message);
   }
 };
+
