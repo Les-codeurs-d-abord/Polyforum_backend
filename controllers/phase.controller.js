@@ -24,9 +24,15 @@ exports.setWishPhase = async (req, res) => {
 
 // Set forum phase to INSCRIPTION
 exports.setPlanningPhase = async (req, res) => {
-  PhaseService.setPlanningPhase()
+  PlanningService.createPlanning()
     .then(() => {
-      res.send("Polyforum en phase de planning");
+      PhaseService.setPlanningPhase()
+        .then(() => {
+          res.send("Polyforum en phase de planning");
+        })
+        .catch((err) => {
+          res.status(500).send(err.message);
+        });
     })
     .catch((err) => {
       res.status(500).send(err.message);
