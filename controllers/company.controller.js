@@ -113,7 +113,8 @@ exports.deleteById = async (req, res) => {
 // Update a User by the id in the request
 exports.updateCompanyProfile = async (req, res) => {
   const userId = req.params.userId;
-  const { companyName, phoneNumber, description, address, links } = req.body;
+  const obj = JSON.parse(req.body.data)
+  const { companyName, phoneNumber, description, address, links } = obj;
   const updateContent = {
     companyName: companyName,
     phoneNumber: phoneNumber ? phoneNumber : null,
