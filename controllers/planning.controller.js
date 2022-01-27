@@ -249,8 +249,8 @@ exports.addMeeting = async (req, res) => {
     const slotValuesA = {
       userMet: userIdCandidate,
       companyName: company.companyName,
-      candidateName: candidate.firstName + candidate.lastName,
-      logo: company.logo
+      candidateName: candidate.firstName + " " + candidate.lastName,
+      logo: candidate.logo
   };
   // const slotA = await Slot.create(slotValuesA);
 
@@ -274,13 +274,13 @@ exports.addMeeting = async (req, res) => {
       if (!olderSlotB) {
         return res.status(409).send("Le planning n'était pas généré par le candidat");
       }
+
     const slotValuesB = {
       userMet: userIdCompany,
       companyName: company.companyName,
-      candidateName: candidate.firstName + candidate.lastName,
+      candidateName: candidate.firstName + " " + candidate.lastName,
       logo: company.logo
     };
-    // const slotB = await Slot.create(slotValuesB);
 
     const slotB = await Slot.update(slotValuesB, {
       where: { userPlanning: userIdCandidate, period:period },
