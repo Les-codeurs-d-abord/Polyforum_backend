@@ -155,7 +155,7 @@ exports.createPlanning = async () => {
                     period: convertIndexAsPeriod(s),
                     companyName: company.companyName,
                     candidateName: nameCandidate,
-                    logo: company.logo
+                    logo: candidate.logo
                 };
                 const slot = await Slot.create(slotValues);
             }
