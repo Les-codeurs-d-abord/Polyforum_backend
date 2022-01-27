@@ -114,12 +114,11 @@ exports.deleteById = async (req, res) => {
 exports.updateCompanyProfile = async (req, res) => {
   const userId = req.params.userId;
   const obj = JSON.parse(req.body.data)
-  const { companyName, phoneNumber, description, address, links } = obj;
+  const { companyName, phoneNumber, description, links } = obj;
   const updateContent = {
     companyName: companyName,
     phoneNumber: phoneNumber ? phoneNumber : null,
     description: description ? description : null,
-    address: address ? address : null,
   };
 
   if (!companyName) {
