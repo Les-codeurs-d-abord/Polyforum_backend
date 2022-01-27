@@ -182,7 +182,7 @@ exports.updateCandidateProfile = async (req, res) => {
       where: { userId: userId },
     });
 
-    if (checkCandidateProfile.cv && phoneNumber && description && address) {
+    if (checkCandidateProfile.cv && phoneNumber && description) {
       await CandidateProfile.update(
         { status: "Complet" },
         {
@@ -387,8 +387,7 @@ exports.uploadCV = async (req, res) => {
       );
       if (
         checkCandidateProfile.phoneNumber &&
-        checkCandidateProfile.description &&
-        checkCandidateProfile.address
+        checkCandidateProfile.description
       ) {
         CandidateProfile.update(
           { status: "Complet" },
