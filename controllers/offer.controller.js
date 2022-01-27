@@ -113,7 +113,7 @@ exports.updateOffer = async (req, res) => {
     // Create new tags
     for (let i = 0; i < tags.length; i++) {
       await Offer_Tags.create({
-        offerId: offer.id,
+        offerId: offerId,
         label: tags[i],
       });
     }
@@ -126,7 +126,7 @@ exports.updateOffer = async (req, res) => {
     // Create new links
     for (let i = 0; i < links.length; i++) {
       await Offer_Links.create({
-        offerId: offer.id,
+        offerId: offerId,
         label: links[i],
       });
     }
