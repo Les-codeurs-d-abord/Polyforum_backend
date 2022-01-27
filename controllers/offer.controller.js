@@ -75,7 +75,7 @@ exports.createOffer = async (req, res) => {
 // Update  an offer
 exports.updateOffer = async (req, res) => {
   const offerId = req.params.offerId;
-  const obj = JSON.parse(req.body)
+  const obj = JSON.parse(req.body.data)
   const { name, description, phoneNumber, email, address, tags, links } = obj;
 
   // Validate input
@@ -121,7 +121,9 @@ exports.updateOffer = async (req, res) => {
         label: links[i],
       });
     }
-    return res.send(offer);
+
+    const updatedOffer = await Offers.findByPk(offerId, {include: [{model: Offer_Tags}, {model: Offer_Links}]})
+    return res.send(updatedOffer);
   } catch (err) {
     return res.status(500).send(err.message);
   }
