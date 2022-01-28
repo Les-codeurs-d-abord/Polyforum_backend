@@ -6,6 +6,8 @@ const CompanyLink = db.company_links;
 const Offer = db.offers;
 const OfferLink = db.offer_links;
 const OfferTag = db.offer_tags;
+const WishCandidate = db.wish_candidate;
+const WishCompany = db.wish_company;
 
 const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
@@ -90,6 +92,55 @@ exports.findById = async (req, res) => {
 exports.deleteById = async (req, res) => {
   const userId = req.params.userId;
   try {
+    const checkCompanyProfile = await CompanyProfile.findOne({
+      where: { userId: userId },
+    });
+    if (!checkCompanyProfile) {
+      return res.status(409).send("Cette entreprise n'existe pas");
+    }
+
+    await WishCompany.destroy({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+
+    await CompanyLink.destroy({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+
+    const offersToDelete = await Offer.findAll({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+
+    const offersToDeleteIds = offersToDelete.map((offerToDelete) => {
+      return offerToDelete.id;
+    });
+
+    const wishes = await WishCandidate.findAll({
+      where: { offerId: { [Sequelize.Op.in]: offersToDeleteIds } },
+      order: [["rank", "DESC"]],
+    });
+
+    await Promise.all(
+      wishes.map(async (wish) => {
+        await WishCandidate.decrement(
+          { rank: 1 },
+          {
+            where: {
+              rank: { [Sequelize.Op.gt]: wish.rank },
+              candidateProfileId: wish.candidateProfileId,
+            },
+          }
+        );
+        await WishCandidate.destroy({
+          where: { id: wish.id },
+        });
+      })
+    );
+
+    await Offer.destroy({
+      where: { id: { [Sequelize.Op.in]: offersToDeleteIds } },
+    });
+
     const profileDeleted = await CompanyProfile.destroy({
       where: { userId: userId },
     });
@@ -113,7 +164,7 @@ exports.deleteById = async (req, res) => {
 // Update a User by the id in the request
 exports.updateCompanyProfile = async (req, res) => {
   const userId = req.params.userId;
-  const obj = JSON.parse(req.body.data)
+  const obj = JSON.parse(req.body.data);
   const { companyName, phoneNumber, description, links } = obj;
   const updateContent = {
     companyName: companyName,
@@ -296,7 +347,11 @@ exports.findOffersById = async (req, res) => {
   try {
     const offers = await Offer.findAll({
       where: { companyProfileId: checkCompanyProfile.id },
-      include: [{ model: OfferLink }, { model: OfferTag }, {model: CompanyProfile}],
+      include: [
+        { model: OfferLink },
+        { model: OfferTag },
+        { model: CompanyProfile },
+      ],
     });
 
     return res.send(offers);
