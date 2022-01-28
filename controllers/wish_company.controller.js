@@ -41,8 +41,7 @@ exports.createWishCompany = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const obj = JSON.parse(req.body.data);
-  const wishList = obj.wishList;
+  const wishList = JSON.parse(req.body.data);
   const companyProfileId = req.params.companyProfileId;
 
   if (!wishList) {
