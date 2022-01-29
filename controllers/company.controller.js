@@ -352,6 +352,19 @@ exports.findOffersById = async (req, res) => {
         { model: OfferTag },
         { model: CompanyProfile },
       ],
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM wish_candidates AS wish_candidate
+            WHERE
+            wish_candidate.offerId = offer.id
+        )`),
+            "candidatesWishesCount",
+          ],
+        ],
+      },
     });
 
     return res.send(offers);
