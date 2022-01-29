@@ -27,10 +27,6 @@ exports.createWishCandidate = async (req, res) => {
     },
   });
 
-  if (candidateWishesCount >= 8) {
-    return res.status(409).send("Ce candidat a déjà 8 voeux");
-  }
-
   const wishCandidate = {
     candidateProfileId: candidateProfileId,
     offerId: offerId,

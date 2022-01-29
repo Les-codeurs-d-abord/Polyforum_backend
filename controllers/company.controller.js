@@ -266,7 +266,7 @@ exports.uploadLogo = async (req, res) => {
       cb(null, "data/companyLogos");
     },
     filename: function (req, file, cb) {
-      const nameParts = file.originalname.split("."); 
+      const nameParts = file.originalname.split(".");
       extension = nameParts[nameParts.length - 1].toLowerCase();
       deleteOldLogo = checkCompanyProfile.logo
         ? extension != checkCompanyProfile.logo.split(".")[1]
@@ -328,7 +328,7 @@ exports.uploadLogo = async (req, res) => {
         });
       }
       // SUCCESS, image successfully uploaded
-      res.send("Success, Image uploaded!");
+      res.send("companyLogos/companyLogo_" + userId + "." + extension);
     }
   });
 };

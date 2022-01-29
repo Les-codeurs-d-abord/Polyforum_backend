@@ -3,6 +3,7 @@ const Offers = db.offers;
 const Offer_Tags = db.offer_tags;
 const Offer_Links = db.offer_links;
 const Company_Profiles = db.company_profiles;
+const WishCandidate = db.wish_candidate;
 const { Sequelize } = require("../models");
 
 const path = require("path");
@@ -11,7 +12,7 @@ const fs = require("fs");
 
 // Create an offer
 exports.createOffer = async (req, res) => {
-  const obj = JSON.parse(req.body.data)
+  const obj = JSON.parse(req.body.data);
   const {
     companyProfileId,
     name,
@@ -74,16 +75,8 @@ exports.createOffer = async (req, res) => {
 
 // Update  an offer
 exports.updateOffer = async (req, res) => {
-  const obj = JSON.parse(req.body.data)
-  const {
-    name,
-    description,
-    phoneNumber,
-    email,
-    address,
-    links,
-    tags,
-  } = obj;
+  const obj = JSON.parse(req.body.data);
+  const { name, description, phoneNumber, email, address, links, tags } = obj;
 
   const offerId = req.params.offerId;
 
@@ -101,7 +94,7 @@ exports.updateOffer = async (req, res) => {
   };
 
   try {
-    const offer = await Offers.update(offerData, {
+    await Offers.update(offerData, {
       where: { id: offerId },
     });
 
@@ -131,7 +124,9 @@ exports.updateOffer = async (req, res) => {
       });
     }
 
-    const updatedOffer = await Offers.findByPk(offerId, {include: [{model: Offer_Tags}, {model: Offer_Links}]})
+    const updatedOffer = await Offers.findByPk(offerId, {
+      include: [{ model: Offer_Tags }, { model: Offer_Links }],
+    });
     return res.send(updatedOffer);
   } catch (err) {
     return res.status(500).send(err.message);
@@ -158,7 +153,7 @@ exports.upload = async (req, res) => {
       cb(null, "data/offerFiles");
     },
     filename: function (req, file, cb) {
-      const nameParts = file.originalname.split("."); 
+      const nameParts = file.originalname.split(".");
       extension = nameParts[nameParts.length - 1].toLowerCase();
       deleteOldFile = checkOffer.offerFile
         ? extension != checkOffer.offerFile.split(".")[1]
@@ -222,7 +217,7 @@ exports.upload = async (req, res) => {
         });
       }
       // SUCCESS, offer file successfully uploaded
-      res.send("Success, Offer file uploaded!");
+      res.send("offerFiles/offer_" + offerId + "." + extension);
     }
   });
 };
@@ -330,6 +325,27 @@ exports.deleteOffer = async (req, res) => {
   const offerId = req.params.offerId;
 
   try {
+    const wishes = await WishCandidate.findAll({
+      where: { offerId: offerId },
+    });
+
+    await Promise.all(
+      wishes.map(async (wish) => {
+        await WishCandidate.decrement(
+          { rank: 1 },
+          {
+            where: {
+              rank: { [Sequelize.Op.gt]: wish.rank },
+              candidateProfileId: wish.candidateProfileId,
+            },
+          }
+        );
+        await WishCandidate.destroy({
+          where: { id: wish.id },
+        });
+      })
+    );
+
     const offerDeleted = await Offers.destroy({
       where: { id: offerId },
     });
