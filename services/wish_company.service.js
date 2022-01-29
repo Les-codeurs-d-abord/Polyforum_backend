@@ -2,6 +2,8 @@ const db = require("../models");
 const Wish_Company = db.wish_company;
 const CandidateProfile = db.candidate_profiles;
 const User = db.users;
+const CandidateLink = db.candidate_links;
+const CandidateTag = db.candidate_tags;
 
 exports.update = async (wishId, rank) => {
   try {
@@ -18,10 +20,12 @@ exports.findAllByCompanyId = async (companyProfileId) => {
       where: { companyProfileId: companyProfileId },
       include: {
         model: CandidateProfile,
-        include: {
-          model: User,
-          attributes: { exclude: ["password"] },
-        },
+        include: [
+          {model: User,
+          attributes: { exclude: ["password"] }},
+          { model: CandidateLink },
+          { model: CandidateTag },
+        ],
       },
       order: [[`rank`, `ASC`]],
     });
