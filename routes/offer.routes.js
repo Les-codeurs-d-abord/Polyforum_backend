@@ -1,4 +1,5 @@
 module.exports = (app) => {
+  var multiparty = require("connect-multiparty");
   const offer = require("../controllers/offer.controller.js");
   const router = require("express").Router();
 
