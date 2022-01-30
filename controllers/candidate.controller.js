@@ -14,6 +14,7 @@ const MailService = require("../services/mail.service");
 const path = require("path");
 const multer = require("multer");
 const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
 
 // Create a candidate
 exports.createCandidate = async (req, res) => {
@@ -261,6 +262,7 @@ exports.uploadLogo = async (req, res) => {
 
   let deleteOldLogo = false;
   let extension = "";
+  const uuid = uuidv4();
 
   var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -270,10 +272,8 @@ exports.uploadLogo = async (req, res) => {
     filename: function (req, file, cb) {
       const nameParts = file.originalname.split("."); 
       extension = nameParts[nameParts.length - 1].toLowerCase();
-      deleteOldLogo = checkCandidateProfile.logo
-        ? extension != checkCandidateProfile.logo.split(".")[1]
-        : false;
-      cb(null, "candidateLogo_" + userId + "." + extension);
+      deleteOldLogo = checkCandidateProfile.logo ? true : false;
+      cb(null, uuid + "." + extension);
     },
   });
 
@@ -316,7 +316,7 @@ exports.uploadLogo = async (req, res) => {
     } else {
       // update logo in candidate profile
       CandidateProfile.update(
-        { logo: "candidateLogos/candidateLogo_" + userId + "." + extension },
+        { logo: "candidateLogos/" + uuid + "." + extension },
         {
           where: { userId: userId },
         }
@@ -327,12 +327,10 @@ exports.uploadLogo = async (req, res) => {
             console.error(err);
             return;
           }
-
-          //file removed
         });
       }
       // SUCCESS, image successfully uploaded
-      return res.send("candidateLogos/candidateLogo_" + userId + "." + extension);
+      res.send("candidateLogos/" + uuid + "." + extension);
     }
   });
 };
@@ -350,6 +348,7 @@ exports.uploadCV = async (req, res) => {
 
   let deleteOldCV = false;
   let extension = "";
+  uuid = uuidv4();
 
   var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -359,10 +358,8 @@ exports.uploadCV = async (req, res) => {
     filename: function (req, file, cb) {
       const nameParts = file.originalname.split("."); 
       extension = nameParts[nameParts.length - 1].toLowerCase();
-      deleteOldCV = checkCandidateProfile.cv
-        ? extension != checkCandidateProfile.cv.split(".")[1]
-        : false;
-      cb(null, "candidateCV_" + userId + "." + extension);
+      deleteOldCV = checkCandidateProfile.cv ? true : false;
+      cb(null, uuid + "." + extension);
     },
   });
 
@@ -405,7 +402,7 @@ exports.uploadCV = async (req, res) => {
     } else {
       // update cv in candidate profile
       CandidateProfile.update(
-        { cv: "candidateCV/candidateCV_" + userId + "." + extension },
+        { cv: "candidateCV/" + uuid + "." + extension },
         {
           where: { userId: userId },
         }
@@ -427,12 +424,10 @@ exports.uploadCV = async (req, res) => {
             console.error(err);
             return;
           }
-
-          //file removed
         });
       }
       // SUCCESS, CV successfully uploaded
-      return res.send("candidateCV/candidateCV_" + userId + "." + extension);
+      res.send("candidateCV/" + uuid + "." + extension);
     }
   });
 };

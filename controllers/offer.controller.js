@@ -9,6 +9,7 @@ const { Sequelize } = require("../models");
 const path = require("path");
 const multer = require("multer");
 const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
 
 // Create an offer
 exports.createOffer = async (req, res) => {
@@ -146,6 +147,7 @@ exports.upload = async (req, res) => {
 
   let deleteOldFile = false;
   let extension = "";
+  const uuid = uuidv4();
 
   var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -155,10 +157,8 @@ exports.upload = async (req, res) => {
     filename: function (req, file, cb) {
       const nameParts = file.originalname.split(".");
       extension = nameParts[nameParts.length - 1].toLowerCase();
-      deleteOldFile = checkOffer.offerFile
-        ? extension != checkOffer.offerFile.split(".")[1]
-        : false;
-      cb(null, "offer_" + offerId + "." + extension);
+      deleteOldFile = checkOffer.offerFile ? true : false;
+      cb(null, uuid + "." + extension);
     },
   });
 
@@ -201,7 +201,7 @@ exports.upload = async (req, res) => {
     } else {
       // update cv in candidate profile
       Offers.update(
-        { offerFile: "offerFiles/offer_" + offerId + "." + extension },
+        { offerFile: "offerFiles/" + uuid + "." + extension },
         {
           where: { id: offerId },
         }
@@ -212,12 +212,10 @@ exports.upload = async (req, res) => {
             console.error(err);
             return;
           }
-
-          //file removed
         });
       }
       // SUCCESS, offer file successfully uploaded
-      res.send("offerFiles/offer_" + offerId + "." + extension);
+      res.send("offerFiles/" + uuid + "." + extension);
     }
   });
 };

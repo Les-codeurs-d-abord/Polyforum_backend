@@ -16,6 +16,7 @@ const MailService = require("../services/mail.service");
 const path = require("path");
 const multer = require("multer");
 const fs = require("fs");
+const { v4: uuidv4 } = require("uuid");
 
 // Create a company
 exports.createCompany = async (req, res) => {
@@ -259,6 +260,7 @@ exports.uploadLogo = async (req, res) => {
 
   let deleteOldLogo = false;
   let extension = "";
+  const uuid = uuidv4();
 
   var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -268,10 +270,8 @@ exports.uploadLogo = async (req, res) => {
     filename: function (req, file, cb) {
       const nameParts = file.originalname.split(".");
       extension = nameParts[nameParts.length - 1].toLowerCase();
-      deleteOldLogo = checkCompanyProfile.logo
-        ? extension != checkCompanyProfile.logo.split(".")[1]
-        : false;
-      cb(null, "companyLogo_" + userId + "." + extension);
+      deleteOldLogo = checkCompanyProfile.logo ? true : false;
+      cb(null, uuid + "." + extension);
     },
   });
 
@@ -314,7 +314,7 @@ exports.uploadLogo = async (req, res) => {
     } else {
       // update logo in company profile
       CompanyProfile.update(
-        { logo: "companyLogos/companyLogo_" + userId + "." + extension },
+        { logo: "companyLogos/" + uuid + "." + extension },
         {
           where: { userId: userId },
         }
@@ -328,7 +328,7 @@ exports.uploadLogo = async (req, res) => {
         });
       }
       // SUCCESS, image successfully uploaded
-      return res.send("companyLogos/companyLogo_" + userId + "." + extension);
+      res.send("companyLogos/" + uuid + "." + extension);
     }
   });
 };
