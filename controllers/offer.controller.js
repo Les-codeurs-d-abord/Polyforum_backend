@@ -6,10 +6,7 @@ const Company_Profiles = db.company_profiles;
 const WishCandidate = db.wish_candidate;
 const { Sequelize } = require("../models");
 
-const path = require("path");
-const multer = require("multer");
 const fs = require("fs");
-const { v4: uuidv4 } = require("uuid");
 
 // Create an offer
 exports.createOffer = async (req, res) => {
@@ -136,88 +133,34 @@ exports.updateOffer = async (req, res) => {
 
 exports.upload = async (req, res) => {
   const offerId = req.params.offerId;
+  try {
+    const filePath = req.files["offer"].path
+      .replace("data\\", "")
+      .replace("\\", "/");
 
-  const checkOffer = await Offers.findOne({
-    where: { id: offerId },
-  });
+    const checkOffer = await Offers.findOne({
+      where: { offerId: offerId },
+    });
 
-  if (!checkOffer) {
-    return res.status(404).send("Cette offre n'existe pas");
-  }
-
-  let deleteOldFile = false;
-  let extension = "";
-  const uuid = uuidv4();
-
-  var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      // Uploads is the Upload_folder_name
-      cb(null, "data/offerFiles");
-    },
-    filename: function (req, file, cb) {
-      const nameParts = file.originalname.split(".");
-      extension = nameParts[nameParts.length - 1].toLowerCase();
-      deleteOldFile = checkOffer.offerFile ? true : false;
-      cb(null, uuid + "." + extension);
-    },
-  });
-
-  // Define the maximum size for uploading
-  // picture i.e. 4 MB. it is optional
-  const maxSize = 4 * 1000 * 1000;
-
-  var upload = multer({
-    storage: storage,
-    limits: { fileSize: maxSize },
-    fileFilter: function (req, file, cb) {
-      // Set the filetypes, it is optional
-      var filetypes = /pdf|doc|docx/;
-      var mimetype = filetypes.test(file.mimetype);
-
-      var extname = filetypes.test(
-        path.extname(file.originalname).toLowerCase()
-      );
-
-      if (mimetype && extname) {
-        return cb(null, true);
+    Offers.update(
+      { offerFile: filePath },
+      {
+        where: { offerId: offerId },
       }
-
-      cb(
-        "Error: File upload only supports the " +
-          "following filetypes - " +
-          filetypes
-      );
-    },
-
-    // offerFile is the name of file attribute
-  }).single("offerFile");
-
-  upload(req, res, function (err) {
-    if (err) {
-      // ERROR occured (here it can be occured due
-      // to uploading image of size greater than
-      // 1MB or uploading different file type)
-      res.status(400).send(err);
-    } else {
-      // update cv in candidate profile
-      Offers.update(
-        { offerFile: "offerFiles/" + uuid + "." + extension },
-        {
-          where: { id: offerId },
+    );
+    if (checkOffer.offerFile !== null) {
+      fs.unlink("data/" + checkOffer.offerFile, (err) => {
+        if (err) {
+          console.error(err);
+          return;
         }
-      );
-      if (deleteOldFile) {
-        fs.unlink("data/" + checkOffer.offerFile, (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-        });
-      }
-      // SUCCESS, offer file successfully uploaded
-      res.send("offerFiles/" + uuid + "." + extension);
+      });
     }
-  });
+    // SUCCESS, offer file successfully uploaded
+    res.send(filePath);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 };
 
 exports.getAllOffer = async (req, res) => {

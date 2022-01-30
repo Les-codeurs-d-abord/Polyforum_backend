@@ -13,10 +13,7 @@ const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
 const MailService = require("../services/mail.service");
 
-const path = require("path");
-const multer = require("multer");
 const fs = require("fs");
-const { v4: uuidv4 } = require("uuid");
 
 // Create a company
 exports.createCompany = async (req, res) => {
@@ -249,88 +246,34 @@ exports.companyList = async (req, res) => {
 
 exports.uploadLogo = async (req, res) => {
   const userId = req.params.userId;
+  try {
+    const filePath = req.files["logo"].path
+      .replace("data\\", "")
+      .replace("\\", "/");
 
-  const checkCompanyProfile = await CompanyProfile.findOne({
-    where: { userId: userId },
-  });
+    const checkCompanyProfile = await CompanyProfile.findOne({
+      where: { userId: userId },
+    });
 
-  if (!checkCompanyProfile) {
-    return res.status(404).send("Cette entreprise n'existe pas");
-  }
-
-  let deleteOldLogo = false;
-  let extension = "";
-  const uuid = uuidv4();
-
-  var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      // Uploads is the Upload_folder_name
-      cb(null, "data/companyLogos");
-    },
-    filename: function (req, file, cb) {
-      const nameParts = file.originalname.split(".");
-      extension = nameParts[nameParts.length - 1].toLowerCase();
-      deleteOldLogo = checkCompanyProfile.logo ? true : false;
-      cb(null, uuid + "." + extension);
-    },
-  });
-
-  // Define the maximum size for uploading
-  // picture i.e. 4 MB. it is optional
-  const maxSize = 4 * 1000 * 1000;
-
-  var upload = multer({
-    storage: storage,
-    limits: { fileSize: maxSize },
-    fileFilter: function (req, file, cb) {
-      // Set the filetypes, it is optional
-      var filetypes = /jpeg|jpg|png/;
-      var mimetype = filetypes.test(file.mimetype);
-
-      var extname = filetypes.test(
-        path.extname(file.originalname).toLowerCase()
-      );
-
-      if (mimetype && extname) {
-        return cb(null, true);
+    CompanyProfile.update(
+      { logo: filePath },
+      {
+        where: { userId: userId },
       }
-
-      cb(
-        "Error: File upload only supports the " +
-          "following filetypes - " +
-          filetypes
-      );
-    },
-
-    // logo is the name of file attribute
-  }).single("logo");
-
-  upload(req, res, function (err) {
-    if (err) {
-      // ERROR occured (here it can be occured due
-      // to uploading image of size greater than
-      // 1MB or uploading different file type)
-      return res.status(400).send(err);
-    } else {
-      // update logo in company profile
-      CompanyProfile.update(
-        { logo: "companyLogos/" + uuid + "." + extension },
-        {
-          where: { userId: userId },
+    );
+    if (checkCompanyProfile.logo !== null) {
+      fs.unlink("data/" + checkCompanyProfile.logo, (err) => {
+        if (err) {
+          console.error(err);
+          return;
         }
-      );
-      if (deleteOldLogo) {
-        fs.unlink("data/" + checkCompanyProfile.logo, (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-        });
-      }
-      // SUCCESS, image successfully uploaded
-      res.send("companyLogos/" + uuid + "." + extension);
+      });
     }
-  });
+    // SUCCESS, Image successfully uploaded
+    res.send(filePath);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 };
 
 exports.findOffersById = async (req, res) => {
