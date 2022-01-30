@@ -24,6 +24,19 @@ module.exports = (app) => {
   // Upload a profile picture
   router.post("/:userId/uploadCV", candidateController.uploadCV);
 
+  var multiparty = require('connect-multiparty'),
+  multipartyMiddleware = multiparty({ uploadDir: './data/img', maxFilesSize: '4000000' });
+
+  router.post('/:userId/uploadCV2', multipartyMiddleware, function(req, res) {
+    console.log(req.files);
+    console.log(req.files['image'].path);
+    res.status(200).send('OK');
+  });
+
+  //test
+  // Upload a profile picture
+  //  router.post("/:userId/uploadCV2", candidateController.uploadCV2);
+
   // Update a candidate profile with id
   router.put("/:userId", candidateController.updateCandidateProfile);
 

@@ -336,6 +336,47 @@ exports.uploadLogo = async (req, res) => {
     }
   });
 };
+var multiparty = require('multiparty');
+exports.uploadCV2 = async (req, res) => {
+  const userId = req.params.userId;
+
+  // console.log(req.body);
+  // console.log(req);
+
+  var form = new multiparty.Form();
+  form.parse(req, function(err, fields, files) {
+    if(err){ 
+      throw err; 
+  }else{
+    console.log(fields.productType+" "+fields.imgOrder+" "+fields.productİd);
+    console.log(files);
+      //files iare images
+      //fields are fields, you can access now to them
+      // it save image in temporary file
+  }
+  });
+  
+
+  // req.form.complete(function(err, fields, files){
+  //   if (err) {
+  //     next(err);
+  //   } else {
+  //     console.log('\nuploaded %s to %s'
+  //       ,  files.image.filename
+  //       , files.image.path);
+  //     res.redirect('back');
+  //   }
+  // });
+
+  // // We can add listeners for several form
+  // // events such as "progress"
+  // req.form.on('progress', function(bytesReceived, bytesExpected){
+  //   var percent = (bytesReceived / bytesExpected * 100) | 0;
+  //   process.stdout.write('Uploading: %' + percent + '\r');
+  // });
+
+  return res.send("oui");
+};
 
 exports.uploadCV = async (req, res) => {
   const userId = req.params.userId;
