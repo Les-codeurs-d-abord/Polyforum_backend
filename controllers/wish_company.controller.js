@@ -86,7 +86,7 @@ exports.findAllByCompanyId = async (req, res) => {
 };
 
 exports.checkByCandidateIdAndCompanyId = async (req, res) => {
-  const { companyProfileId, candidateProfileId } = req.query;
+  const { companyProfileId, candidateProfileId } = req.params;
 
   if (!(companyProfileId && candidateProfileId)) {
     return res.status(400).send("All input required");
@@ -109,7 +109,7 @@ exports.checkByCandidateIdAndCompanyId = async (req, res) => {
 };
 
 exports.delete = async (req, res) => {
-  const { companyProfileId, candidateProfileId } = req.body;
+  const { companyProfileId, candidateProfileId } = req.params;
 
   if (!(companyProfileId && candidateProfileId)) {
     res.status(400).send("All input required");

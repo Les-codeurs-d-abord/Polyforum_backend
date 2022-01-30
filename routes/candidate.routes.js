@@ -1,6 +1,8 @@
 module.exports = (app) => {
   var multiparty = require("connect-multiparty");
   const candidateController = require("../controllers/candidate.controller.js");
+  const checkRoleAndUserId = require("../middleware/checkRoleAndUserId");
+  const auth = require("../middleware/auth");
 
   const router = require("express").Router();
 
@@ -17,7 +19,7 @@ module.exports = (app) => {
   router.get("/:userId/tags", candidateController.tagsList);
 
   // Create a new candidate User
-  router.post("/", candidateController.createCandidate);
+  router.post("/", auth(["ADMIN"]), candidateController.createCandidate);
 
   // Upload a profile picture
   multipartyLogoMiddleware = multiparty({
@@ -26,6 +28,7 @@ module.exports = (app) => {
   });
   router.post(
     "/:userId/uploadLogo",
+    checkRoleAndUserId(["CANDIDAT"]),
     multipartyLogoMiddleware,
     candidateController.uploadLogo
   );

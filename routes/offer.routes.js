@@ -3,8 +3,9 @@ module.exports = (app) => {
   const offer = require("../controllers/offer.controller.js");
   const router = require("express").Router();
 
-  //offer
-  router.post("", offer.createOffer);
+  // Create offer
+  router.post("/:companyProfileId", offer.createOffer);
+
   // Upload offer file
   multipartyOfferMiddleware = multiparty({
     uploadDir: "./data/offerFiles",
@@ -12,14 +13,14 @@ module.exports = (app) => {
   });
   router.post("/:offerId/upload", multipartyLogoMiddleware, offer.upload);
 
+  // Get all offers
   router.get("", offer.getAllOffer);
-  router.put("/:offerId", offer.updateOffer);
-  router.delete("/:offerId", offer.deleteOffer);
 
-  //offer_tags
-  router.post("/tag", offer.createOfferTag);
-  router.get("/tag/:offerId", offer.findOfferTagByOfferId);
-  router.post("/link", offer.createOfferLink);
+  // Update offer
+  router.put("/:offerId", offer.updateOffer);
+
+  // Delete offer
+  router.delete("/:offerId", offer.deleteOffer);
 
   app.use("/api/offer", router);
 };

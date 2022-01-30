@@ -11,23 +11,15 @@ const fs = require("fs");
 // Create an offer
 exports.createOffer = async (req, res) => {
   const obj = JSON.parse(req.body.data);
-  const {
-    companyProfileId,
-    name,
-    description,
-    phoneNumber,
-    email,
-    address,
-    links,
-    tags,
-  } = obj;
+  const { name, description, phoneNumber, email, address, links, tags } = obj;
+  const companyProfileId = req.params.companyProfileId;
 
   // Validate input
   if (
     !(
+      companyProfileId &&
       name &&
       description &&
-      companyProfileId &&
       email &&
       phoneNumber &&
       address &&
