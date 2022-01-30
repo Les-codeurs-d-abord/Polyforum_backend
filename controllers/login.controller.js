@@ -6,6 +6,7 @@ const CandidateProfile = db.candidate_profiles;
 const CandidateLink = db.candidate_links;
 const CandidateTag = db.candidate_tags;
 const CompanyProfile = db.company_profiles;
+const CompanyLink = db.company_links;
 
 var jwt = require("jsonwebtoken");
 
@@ -72,7 +73,7 @@ exports.getUserFromToken = async (req, res) => {
               model: User,
               attributes: ["id", "email", "role"],
             },
-              { model: CandidateLink },
+            { model: CandidateLink },
             { model: CandidateTag },
           ],
         });
@@ -92,6 +93,7 @@ exports.getUserFromToken = async (req, res) => {
               model: User,
               attributes: ["id", "email", "role"],
             },
+            { model: CompanyLink }
           ],
         });
         if (!company_profile) {
@@ -110,7 +112,7 @@ exports.getUserFromToken = async (req, res) => {
         if (!admin_profile) {
           return res.status(404).send("Pas d'admin trouvé");
         }
-        return res.send({user: admin_profile});
+        return res.send({ user: admin_profile });
       } catch (err) {
         return res.status(500).send(err.message);
       }
