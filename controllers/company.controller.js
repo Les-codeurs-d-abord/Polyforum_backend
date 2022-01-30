@@ -266,7 +266,7 @@ exports.uploadLogo = async (req, res) => {
       cb(null, "data/companyLogos");
     },
     filename: function (req, file, cb) {
-      const nameParts = file.originalname.split("."); 
+      const nameParts = file.originalname.split(".");
       extension = nameParts[nameParts.length - 1].toLowerCase();
       deleteOldLogo = checkCompanyProfile.logo
         ? extension != checkCompanyProfile.logo.split(".")[1]
@@ -328,7 +328,7 @@ exports.uploadLogo = async (req, res) => {
         });
       }
       // SUCCESS, image successfully uploaded
-      return res.send("Success, Image uploaded!");
+      return res.send("companyLogos/companyLogo_" + userId + "." + extension);
     }
   });
 };
@@ -352,6 +352,19 @@ exports.findOffersById = async (req, res) => {
         { model: OfferTag },
         { model: CompanyProfile },
       ],
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM wish_candidates AS wish_candidate
+            WHERE
+            wish_candidate.offerId = offer.id
+        )`),
+            "candidatesWishesCount",
+          ],
+        ],
+      },
     });
 
     return res.send(offers);

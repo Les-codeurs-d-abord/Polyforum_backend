@@ -332,7 +332,7 @@ exports.uploadLogo = async (req, res) => {
         });
       }
       // SUCCESS, image successfully uploaded
-      return res.send("Success, Image uploaded!");
+      return res.send("candidateLogos/candidateLogo_" + userId + "." + extension);
     }
   });
 };
@@ -432,7 +432,7 @@ exports.uploadCV = async (req, res) => {
         });
       }
       // SUCCESS, CV successfully uploaded
-      return res.send("Success, CV uploaded!");
+      return res.send("candidateCV/candidateCV_" + userId + "." + extension);
     }
   });
 };
