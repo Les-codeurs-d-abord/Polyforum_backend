@@ -310,7 +310,7 @@ exports.uploadLogo = async (req, res) => {
       // ERROR occured (here it can be occured due
       // to uploading image of size greater than
       // 1MB or uploading different file type)
-      res.status(400).send(err);
+      return res.status(400).send(err);
     } else {
       // update logo in company profile
       CompanyProfile.update(
@@ -328,7 +328,7 @@ exports.uploadLogo = async (req, res) => {
         });
       }
       // SUCCESS, image successfully uploaded
-      res.send("Success, Image uploaded!");
+      return res.send("Success, Image uploaded!");
     }
   });
 };

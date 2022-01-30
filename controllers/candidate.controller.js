@@ -312,7 +312,7 @@ exports.uploadLogo = async (req, res) => {
       // ERROR occured (here it can be occured due
       // to uploading image of size greater than
       // 1MB or uploading different file type)
-      res.status(400).send(err);
+      return res.status(400).send(err);
     } else {
       // update logo in candidate profile
       CandidateProfile.update(
@@ -332,7 +332,7 @@ exports.uploadLogo = async (req, res) => {
         });
       }
       // SUCCESS, image successfully uploaded
-      res.send("Success, Image uploaded!");
+      return res.send("Success, Image uploaded!");
     }
   });
 };
@@ -401,7 +401,7 @@ exports.uploadCV = async (req, res) => {
       // ERROR occured (here it can be occured due
       // to uploading image of size greater than
       // 1MB or uploading different file type)
-      res.status(400).send(err);
+      return res.status(400).send(err);
     } else {
       // update cv in candidate profile
       CandidateProfile.update(
@@ -432,7 +432,7 @@ exports.uploadCV = async (req, res) => {
         });
       }
       // SUCCESS, CV successfully uploaded
-      res.send("Success, CV uploaded!");
+      return res.send("Success, CV uploaded!");
     }
   });
 };
