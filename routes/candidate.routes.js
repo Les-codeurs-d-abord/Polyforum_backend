@@ -35,7 +35,6 @@ module.exports = (app) => {
     uploadDir: "./data/candidateCV",
     maxFilesSize: "4000000",
   });
-
   router.post(
     "/:userId/uploadCV",
     multipartyCVMiddleware,

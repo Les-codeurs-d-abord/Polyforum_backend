@@ -1,4 +1,5 @@
 module.exports = (app) => {
+  var multiparty = require("connect-multiparty");
   const companyController = require("../controllers/company.controller.js");
 
   const router = require("express").Router();
@@ -16,7 +17,15 @@ module.exports = (app) => {
   router.post("/", companyController.createCompany);
 
   // Upload a profile picture
-  router.post("/:userId/uploadLogo", companyController.uploadLogo);
+  multipartyLogoMiddleware = multiparty({
+    uploadDir: "./data/companyLogos",
+    maxFilesSize: "4000000",
+  });
+  router.post(
+    "/:userId/uploadLogo",
+    multipartyLogoMiddleware,
+    companyController.uploadLogo
+  );
 
   // Delete a single company with id
   router.delete("/:userId", companyController.deleteById);
