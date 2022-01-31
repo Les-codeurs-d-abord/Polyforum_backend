@@ -11,7 +11,7 @@ module.exports = (app) => {
     uploadDir: "./data/offerFiles",
     maxFilesSize: "4000000",
   });
-  router.post("/:offerId/upload", multipartyLogoMiddleware, offer.upload);
+  router.post("/:offerId/upload", multipartyOfferMiddleware, offer.upload);
 
   router.get("", offer.getAllOffer);
   router.put("/:offerId", offer.updateOffer);
