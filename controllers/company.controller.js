@@ -236,6 +236,7 @@ exports.companyList = async (req, res) => {
       attributes: [
         "companyName",
         "logo",
+        "status",
         [
           Sequelize.literal(`(
             SELECT COUNT(*)
