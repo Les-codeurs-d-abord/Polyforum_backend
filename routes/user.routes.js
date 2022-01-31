@@ -1,7 +1,9 @@
 module.exports = (app) => {
   const users = require("../controllers/user.controller.js");
-
   const router = require("express").Router();
+  
+  // Reset a User password if forgotten
+  router.put("/resetForgottenPassword", users.resetForgottenPassword);
 
   // Update a User email
   router.put("/:userId", users.update);
@@ -11,6 +13,7 @@ module.exports = (app) => {
 
   // Reset a User password
   router.put("/:userId/resetPassword", users.resetPassword);
+
 
   // Get all admins
   router.get("/admins", users.findAdmins);
