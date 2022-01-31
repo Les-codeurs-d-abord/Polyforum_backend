@@ -187,6 +187,24 @@ exports.updateCompanyProfile = async (req, res) => {
       where: { userid: userId },
     });
 
+    // update status if company has an offer and completed profile
+    const checkOffer = await Offer.findOne({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+    if (
+      checkOffer &&
+      phoneNumber &&
+      description &&
+      checkCompanyProfile.status === "Incomplet"
+    ) {
+      await CompanyProfile.update(
+        { status: "Complet" },
+        {
+          where: { userId: userId },
+        }
+      );
+    }
+
     // Delete previous links
     await CompanyLink.destroy({
       where: { companyProfileId: checkCompanyProfile.id },

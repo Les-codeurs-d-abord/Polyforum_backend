@@ -39,6 +39,11 @@ exports.getToken = async (req, res) => {
               { status: "Incomplet" },
               { where: { userId: user.id, status: "Jamais connecté" } }
             ).catch((error) => res.status(500).json({ error }));
+          } else if (user.role === User.ROLES.COMPANY) {
+            CompanyProfile.update(
+              { status: "Incomplet" },
+              { where: { userId: user.id, status: "Jamais connecté" } }
+            ).catch((error) => res.status(500).json({ error }));
           }
 
           var payload = {
@@ -93,7 +98,7 @@ exports.getUserFromToken = async (req, res) => {
               model: User,
               attributes: ["id", "email", "role"],
             },
-            { model: CompanyLink }
+            { model: CompanyLink },
           ],
         });
         if (!company_profile) {
