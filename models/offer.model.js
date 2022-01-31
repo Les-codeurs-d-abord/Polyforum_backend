@@ -8,7 +8,7 @@ module.exports = (sequelize, Sequelize) => {
       },
     },
     description: {
-      type: Sequelize.STRING(255),
+      type: Sequelize.STRING(500),
       allowNull: false,
       validate: {
         notEmpty: true,
