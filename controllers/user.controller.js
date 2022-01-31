@@ -43,7 +43,7 @@ exports.changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
   if (!(oldPassword && newPassword)) {
-    return res.status(400).send("All input is required");
+    return res.status(400).send("Au moins un champ manquant (ancien mdp / nouveau mdp)");
   }
 
   //Check if user exists
