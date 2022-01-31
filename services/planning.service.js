@@ -6,6 +6,7 @@ const Candidates = db.candidate_profiles;
 const Offer = db.offers;
 const Planning = db.planning;
 const Slot = db.slot;
+const { Sequelize } = require("../models");
 
 
 exports.createPlanning = async () => {
@@ -13,18 +14,22 @@ exports.createPlanning = async () => {
     const wishesCompanies = await Wish_Company.findAll({
         order: [
             ['rank', 'ASC'],
+            Sequelize.literal('rand()')
         ],
         attributes: ['id', 'companyProfileId', 'candidateProfileId', 'rank'],
     });
+
     const wishesCandidates = await Wish_Candidate.findAll({
         order: [
             ['rank', 'ASC'],
+            Sequelize.literal('rand()')
         ],
         attributes: ['id', 'candidateProfileId', 'offerId', 'rank'],
     });
+
     const allCompanies = await Companies.findAll();
     const allCandidates = await Candidates.findAll();
-    
+
     let mapCompanyIndex = new Map();
     let mapCandidateIndex = new Map();
     let mapCandidateUserIdToCandidateId = new Map();
@@ -33,6 +38,7 @@ exports.createPlanning = async () => {
     let mapOffersCompany = new Map();
 
     const nbSlotPerUser = 8;
+    const minNbMeeting = 2;
     let planningCandidate = new Array(allCandidates.length);
     let planningCompany = new Array(allCompanies.length);
 
@@ -75,25 +81,23 @@ exports.createPlanning = async () => {
         const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateProfileId);
         const indexCompany = mapCompanyIndex.get(offer.dataValues.companyProfileId);
         mapOfferCompany.set(wishesCandidates[w].offerId, offer.dataValues.companyProfileId);
-        if (matrixWishes[indexCompany][indexCandidate]%2 == 0) {
+        if (matrixWishes[indexCompany][indexCandidate] % 2 == 0) {
             matrixWishes[indexCompany][indexCandidate] += costWishCandidate;
         }
     }
 
-    console.log(matrixWishes);
-
     //On cherche les voeux communs aux deux parties
     for (var w = 0; w < allCompanies.length; w++) {
         for (var w2 = 0; w2 < allCandidates.length; w2++) {
-                if (matrixWishes[w][w2] == 3){
-                    const company = allCompanies[w];
-                    const candidate = allCandidates[w2];
-                    const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[w], planningCandidate[w2], nbSlotPerUser);
-                    if (indexNewSlot >= 0) {
-                        planningCompany[w][indexNewSlot] = candidate.userId;
-                        planningCandidate[w2][indexNewSlot] = company.userId;
-                    }
+            if (matrixWishes[w][w2] == 3) {
+                const company = allCompanies[w];
+                const candidate = allCandidates[w2];
+                const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[w], planningCandidate[w2], nbSlotPerUser);
+                if (indexNewSlot >= 0) {
+                    planningCompany[w][indexNewSlot] = candidate.userId;
+                    planningCandidate[w2][indexNewSlot] = company.userId;
                 }
+            }
         }
     }
 
@@ -101,7 +105,7 @@ exports.createPlanning = async () => {
     for (var w = 0; w < wishesCompanies.length; w++) {
         const indexCandidate = mapCandidateIndex.get(wishesCompanies[w].candidateProfileId);
         const indexCompany = mapCompanyIndex.get(wishesCompanies[w].companyProfileId);
-        
+
         if (matrixWishes[indexCompany][indexCandidate] == 2) {
             const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[indexCompany], planningCandidate[indexCandidate], nbSlotPerUser);
             if (indexNewSlot >= 0) {
@@ -112,30 +116,129 @@ exports.createPlanning = async () => {
 
     }
 
-        //On cherche les voeux des candidats
-        for (var w = 0; w < wishesCandidates.length; w++) {
-            const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateProfileId);
-            const indexCompany = mapCompanyIndex.get(mapOffersCompany.get(wishesCandidates[w].offerId));
-            
-            if (matrixWishes[indexCompany][indexCandidate] == 1) {
-                const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[indexCompany], planningCandidate[indexCandidate], nbSlotPerUser);
-                if (indexNewSlot >= 0) {
-                    planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
-                    planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
-                }
+    //On cherche les voeux des candidats
+    for (var w = 0; w < wishesCandidates.length; w++) {
+        const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateProfileId);
+        const indexCompany = mapCompanyIndex.get(mapOffersCompany.get(wishesCandidates[w].offerId));
+
+        if (matrixWishes[indexCompany][indexCandidate] == 1) {
+            const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[indexCompany], planningCandidate[indexCandidate], nbSlotPerUser);
+            if (indexNewSlot >= 0) {
+                planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
+                planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
             }
         }
 
+    }
 
+    let listDESCCompanies = new Array();
+    for (var w = 0; w < allCompanies.length; w++) {
+        const nbFilledSlot = getNumberFilledSlots(planningCompany[w], nbSlotPerUser);
+        company = new companyWithNbSlot(w, nbSlotPerUser - nbFilledSlot);
+        // if (nbFilledSlot < minNbMeeting) {
+        //     const diff = minNbMeeting - nbFilledSlot;
+        //     for (var i = 0; i < diff; i++) {
+        //         listNEMCompanies[listNEMCompanies.length] = company;
+        //     }
+        // }
+        listDESCCompanies[listDESCCompanies.length] = company;
+    }
+
+    listDESCCompanies.sort((a, b) => (a.nbFreeSlots > b.nbFreeSlots) ? -1 : (a.nbFreeSlots === b.nbFreeSlots) ? ((a.nbFreeSlots > b.nbFreeSlots) ? -1 : 1) : 1)
+
+    let listDESCCandidates = new Array();
+    let listNEMCandidates = new Array();
+    for (var w = 0; w < allCandidates.length; w++) {
+        const nbFilledSlot = getNumberFilledSlots(planningCandidate[w], nbSlotPerUser);
+        c = new candidateWithNbSlot(w, nbSlotPerUser - nbFilledSlot);
+        if (nbFilledSlot < minNbMeeting) {
+            const diff = minNbMeeting - nbFilledSlot;
+            for (var i = 0; i < diff; i++) {
+                listNEMCandidates[listNEMCandidates.length] = c;
+            }
+        }
+        listDESCCandidates[listDESCCandidates.length] = c
+    }
+    listDESCCandidates.sort((a, b) => (a.nbFreeSlots > b.nbFreeSlots) ? -1 : (a.nbFreeSlots === b.nbFreeSlots) ? ((a.nbFreeSlots > b.nbFreeSlots) ? -1 : 1) : 1)
+
+
+    listNEMCandidates = listNEMCandidates.sort(() => (Math.random() > .5) ? 1 : -1);
+
+    //on fill les candidats
+    for (var w = 0; w < listNEMCandidates.length; w++) {
+        for (var e = 0; e < listDESCCompanies.length; e++) {
+            // const indexCandidate = listNEMCandidates[w].indexCandidate;
+            // const indexCompany = listDESCCompanies[e].indexCompany;
+            // if (matrixWishes[indexCompany][indexCandidate] == 0) {
+            // const indexNewSlot = checkFirstIndexOfAvailability(planningCandidate[indexCandidate], planningCompany[indexCompany], nbSlotPerUser);
+            // if (indexNewSlot >= 0) {
+            //     console.log('new meeting ' + indexCandidate + ' ' + indexCompany)
+            //     planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
+            //     planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
+            //     listNEMCandidates[w].addMeeting();
+            //     listDESCCompanies[e].addMeeting();
+            //     listDESCCompanies.sort((a, b) => (a.nbFreeSlots > b.nbFreeSlots) ? -1 : (a.nbFreeSlots === b.nbFreeSlots) ? ((a.nbFreeSlots > b.nbFreeSlots) ? -1 : 1) : 1)
+            //                         matrixWishes[indexCompany][indexCandidate] = -1;
+
+            // break;
+            // }
+            // }
+        }
+    }
+
+    //Fill companies
+    let listNEMCompanies = new Array();
+    for (var w = 0; w < allCompanies.length; w++) {
+        const nbFilledSlot = getNumberFilledSlots(planningCompany[w], nbSlotPerUser);
+        company = new companyWithNbSlot(w, nbSlotPerUser - nbFilledSlot);
+        if (nbFilledSlot < minNbMeeting) {
+            const diff = minNbMeeting - nbFilledSlot;
+            for (var i = 0; i < diff; i++) {
+                listNEMCompanies[listNEMCompanies.length] = company;
+            }
+        }
+    }
+
+
+    //Shuffle list of companies with not enough meetings
+    listNEMCompanies = listNEMCompanies.sort(() => (Math.random() > .5) ? 1 : -1);
+
+    for (var w = 0; w < listNEMCompanies.length; w++) {
+        for (var e = 0; e < listDESCCandidates.length; e++) {
+            const indexCompany = listNEMCompanies[w].indexCompany;
+            const indexCandidate = listDESCCandidates[e].indexCandidate;
+            if (matrixWishes[indexCompany][indexCandidate] == 0) {
+                const indexNewSlot = checkFirstIndexOfAvailability(planningCandidate[indexCandidate], planningCompany[indexCompany], nbSlotPerUser);
+                console.log(indexCompany)
+
+                if (indexNewSlot >= 0) {
+                    console.log('new meeting ' + indexCandidate + ' ' + indexCompany)
+                    planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
+                    planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
+                    listNEMCompanies[w].addMeeting();
+                    listDESCCandidates[e].addMeeting();
+                    listDESCCompanies.sort((a, b) => (a.nbFreeSlots > b.nbFreeSlots) ? -1 : (a.nbFreeSlots === b.nbFreeSlots) ? ((a.nbFreeSlots > b.nbFreeSlots) ? -1 : 1) : 1)
+                    matrixWishes[indexCompany][indexCandidate] = -1;
+                    break;
+                }
+            }
+        }
+    }
+
+
+    //on fill les entreprises
+
+
+    // ----- Enregistrement des données en base ----- \\
     // On efface les vielles valeurs de planning et de slot
     Planning.destroy({
         where: {},
         truncate: true
-      });
+    });
 
     Slot.destroy({
-    where: {},
-    truncate: true
+        where: {},
+        truncate: true
     });
 
     //Convertion matrice planning vers des slots de rdv...
@@ -147,7 +250,7 @@ exports.createPlanning = async () => {
             if (planningCompany[w][s]) {
                 const idCandidate = mapCandidateUserIdToCandidateId.get(planningCompany[w][s]);
                 const candidate = allCandidates[mapCandidateIndex.get(idCandidate)];
-                const nameCandidate = candidate.firstName +" " + candidate.lastName;
+                const nameCandidate = candidate.firstName + " " + candidate.lastName;
 
                 const slotValues = {
                     userPlanning: company.userId,
@@ -164,7 +267,7 @@ exports.createPlanning = async () => {
                     userPlanning: company.userId,
                     period: convertIndexAsPeriod(s)
                 };
-                const slot = await Slot.create(slotValues);               
+                const slot = await Slot.create(slotValues);
             }
         }
     }
@@ -180,7 +283,7 @@ exports.createPlanning = async () => {
                 const idCompany = mapCompanyUserIdToCompanyId.get(planningCandidate[w][s]);
 
                 const company = allCompanies[mapCompanyIndex.get(idCompany)];
-                const nameCandidate = candidate.firstName +" " + candidate.lastName;
+                const nameCandidate = candidate.firstName + " " + candidate.lastName;
 
                 const slotValues = {
                     userPlanning: candidate.userId,
@@ -197,7 +300,7 @@ exports.createPlanning = async () => {
                     userPlanning: candidate.userId,
                     period: convertIndexAsPeriod(s)
                 };
-                const slot = await Slot.create(slotValues);               
+                const slot = await Slot.create(slotValues);
             }
         }
     }
@@ -207,7 +310,7 @@ exports.createPlanning = async () => {
 
 
 
-function checkFirstIndexOfAvailability(planningCompany, planningCandidate,nbSlotPerUser) {
+function checkFirstIndexOfAvailability(planningCompany, planningCandidate, nbSlotPerUser) {
     for (var s = 0; s < nbSlotPerUser; s++) {
         if (!planningCandidate[s] && !planningCompany[s]) {
             return s;
@@ -226,5 +329,37 @@ function convertIndexAsPeriod(index) {
         case 5: return '16h30 - 17h'
         case 6: return '17h - 17h30'
         case 7: return '17h30 - 18h'
+    }
+}
+
+function getNumberFilledSlots(planning, nbSlotPerUser) {
+    let cpt = 0;
+    for (var s = 0; s < nbSlotPerUser; s++) {
+        if (planning[s]) {
+            cpt++;
+        }
+    }
+    return cpt;
+}
+
+class companyWithNbSlot {
+    constructor(indexCompany, nbFreeSlots) {
+        this.indexCompany = indexCompany;
+        this.nbFreeSlots = nbFreeSlots;
+    }
+
+    addMeeting() {
+        this.nbFreeSlots = this.nbFreeSlots - 1;
+    }
+}
+
+class candidateWithNbSlot {
+    constructor(indexCandidate, nbFreeSlots) {
+        this.indexCandidate = indexCandidate;
+        this.nbFreeSlots = nbFreeSlots;
+    }
+
+    addMeeting() {
+        this.nbFreeSlots = this.nbFreeSlots - 1;
     }
 }
