@@ -10,6 +10,7 @@ const fs = require("fs");
 
 // Create an offer
 exports.createOffer = async (req, res) => {
+  console.log(req.body.data);
   const obj = JSON.parse(req.body.data);
   const {
     companyProfileId,
@@ -139,13 +140,13 @@ exports.upload = async (req, res) => {
       .replace("\\", "/");
 
     const checkOffer = await Offers.findOne({
-      where: { offerId: offerId },
+      where: { id: offerId },
     });
 
     Offers.update(
       { offerFile: filePath },
       {
-        where: { offerId: offerId },
+        where: { id: offerId },
       }
     );
     if (checkOffer.offerFile !== null) {
@@ -157,8 +158,9 @@ exports.upload = async (req, res) => {
       });
     }
     // SUCCESS, offer file successfully uploaded
-    res.send(filePath);
+    return res.send(filePath);
   } catch (err) {
+    console.log(err.message);
     res.status(500).send(err.message);
   }
 };
