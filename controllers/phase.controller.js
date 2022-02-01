@@ -5,10 +5,10 @@ const PlanningService = require("../services/planning.service");
 exports.setInscriptionPhase = async (req, res) => {
   PhaseService.setInscriptionPhase()
     .then(() => {
-      res.send("Polyforum en phase d'inscription");
+      return res.send("Polyforum en phase d'inscription");
     })
     .catch((err) => {
-      res.status(500).send(err.message);
+      return res.status(500).send(err.message);
     });
 };
 
@@ -16,10 +16,10 @@ exports.setInscriptionPhase = async (req, res) => {
 exports.setWishPhase = async (req, res) => {
   PhaseService.setWishPhase()
     .then(() => {
-      res.send("Polyforum en phase de voeux");
+      return res.send("Polyforum en phase de voeux");
     })
     .catch((err) => {
-      res.status(500).send(err.message);
+      return res.status(500).send(err.message);
     });
 };
 
@@ -29,22 +29,22 @@ exports.setPlanningPhase = async (req, res) => {
     .then(() => {
       PhaseService.setPlanningPhase()
         .then(() => {
-          res.send("Polyforum en phase de planning");
+          return res.send("Polyforum en phase de planning");
         })
         .catch((err) => {
-          res.status(500).send(err.message);
+          return res.status(500).send(err.message);
         });
     })
     .catch((err) => {
-      res.status(500).send(err.message);
+      return res.status(500).send(err.message);
     });
 };
 
 exports.getCurrentPhase = async (req, res) => {
   try {
     const currentPhase = await PhaseService.getCurrentPhase();
-    res.send(currentPhase);
+    return res.send(currentPhase);
   } catch (err) {
-    res.status(500).send(err.message);
+    return res.status(500).send(err.message);
   }
 };

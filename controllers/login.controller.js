@@ -38,12 +38,16 @@ exports.getToken = async (req, res) => {
             CandidateProfile.update(
               { status: "Incomplet" },
               { where: { userId: user.id, status: "Jamais connecté" } }
-            ).catch((error) => res.status(500).json({ error }));
+            ).catch((error) => {
+              return res.status(500).json({ error });
+            });
           } else if (user.role === User.ROLES.COMPANY) {
             CompanyProfile.update(
               { status: "Incomplet" },
               { where: { userId: user.id, status: "Jamais connecté" } }
-            ).catch((error) => res.status(500).json({ error }));
+            ).catch((error) => {
+              return res.status(500).json({ error });
+            });
           }
 
           var payload = {
@@ -52,7 +56,7 @@ exports.getToken = async (req, res) => {
             id: user.id,
           };
 
-          res.status(200).json({
+          return res.status(200).json({
             payload,
             token: jwt.sign(payload, process.env.JWT_KEY, {
               algorithm: "HS256",
@@ -60,9 +64,13 @@ exports.getToken = async (req, res) => {
             }),
           });
         })
-        .catch((error) => res.status(500).json({ error }));
+        .catch((error) => {
+          return res.status(500).json({ error });
+        });
     })
-    .catch((error) => res.status(500).json({ error }));
+    .catch((error) => {
+      return res.status(500).json({ error });
+    });
 };
 
 exports.getUserFromToken = async (req, res) => {
