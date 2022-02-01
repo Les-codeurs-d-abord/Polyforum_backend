@@ -10,6 +10,7 @@ const { Sequelize } = require("../models");
 
 
 exports.createPlanning = async () => {
+    console.log("Début création du planning");
     //Récupération des voeux et informations enregistées en base de données
     const wishesCompanies = await Wish_Company.findAll({
         order: [
@@ -30,12 +31,17 @@ exports.createPlanning = async () => {
     const allCompanies = await Companies.findAll();
     const allCandidates = await Candidates.findAll();
 
+    let mapOffersCompany = new Map();
+    const listOffers = await Offer.findAll({ raw: true });
+    for (var i = 0; i < listOffers.length; i++) {
+        const offer = listOffers[i];
+        mapOffersCompany.set(offer.id, offer.companyProfileId)
+    }
+
     let mapCompanyIndex = new Map();
     let mapCandidateIndex = new Map();
     let mapCandidateUserIdToCandidateId = new Map();
     let mapCompanyUserIdToCompanyId = new Map();
-
-    let mapOffersCompany = new Map();
 
     const nbSlotPerUser = 8;
     const minNbMeeting = 2;
@@ -74,13 +80,9 @@ exports.createPlanning = async () => {
 
     //On remplit la matrice avec les voeux qu'ont fait les candidats
     const costWishCandidate = 1;
-    let mapOfferCompany = new Map();
     for (var w = 0; w < wishesCandidates.length; w++) {
-        const offer = await Offer.findByPk(wishesCandidates[w].offerId);
-        mapOffersCompany.set(offer.id, offer.dataValues.companyProfileId)
         const indexCandidate = mapCandidateIndex.get(wishesCandidates[w].candidateProfileId);
-        const indexCompany = mapCompanyIndex.get(offer.dataValues.companyProfileId);
-        mapOfferCompany.set(wishesCandidates[w].offerId, offer.dataValues.companyProfileId);
+        const indexCompany = mapCompanyIndex.get(mapOffersCompany.get(wishesCandidates[w].offerId));
         if (matrixWishes[indexCompany][indexCandidate] % 2 == 0) {
             matrixWishes[indexCompany][indexCandidate] += costWishCandidate;
         }
@@ -91,9 +93,7 @@ exports.createPlanning = async () => {
     for (var w = 0; w < allCompanies.length; w++) {
         for (var w2 = 0; w2 < allCandidates.length; w2++) {
             if (matrixWishes[w][w2] == 3) {
-                console.log('company ' + w + ' candidate ' + w2);
                 listWishesToAdd[listWishesToAdd.length] = (w * allCandidates.length + w2);
-
             }
         }
     }
@@ -201,6 +201,7 @@ exports.createPlanning = async () => {
             const diff = minNbMeeting - nbFilledSlot;
             for (var i = 0; i < diff; i++) {
                 listNEMCompanies[listNEMCompanies.length] = company;
+                // listNEMCompanies.push(company);
             }
         }
     }
@@ -215,7 +216,6 @@ exports.createPlanning = async () => {
             const indexCandidate = listDESCCandidates[e].indexCandidate;
             if (matrixWishes[indexCompany][indexCandidate] == 0) {
                 const indexNewSlot = checkFirstIndexOfAvailability(planningCandidate[indexCandidate], planningCompany[indexCompany], nbSlotPerUser);
-                console.log(indexCompany)
 
                 if (indexNewSlot >= 0) {
                     planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
@@ -243,6 +243,7 @@ exports.createPlanning = async () => {
     });
 
     //Convertion matrice planning vers des slots de rdv...
+    const listSlotToSave = new Array();
     for (var w = 0; w < allCompanies.length; w++) {
 
         // Création des slots associés
@@ -261,14 +262,15 @@ exports.createPlanning = async () => {
                     candidateName: nameCandidate,
                     logo: candidate.logo
                 };
-                const slot = await Slot.create(slotValues);
+                listSlotToSave.push(slotValues);
             }
             else {
                 const slotValues = {
                     userPlanning: company.userId,
                     period: convertIndexAsPeriod(s)
                 };
-                const slot = await Slot.create(slotValues);
+                listSlotToSave.push(slotValues);
+
             }
         }
     }
@@ -294,18 +296,25 @@ exports.createPlanning = async () => {
                     candidateName: nameCandidate,
                     logo: company.logo
                 };
-                const slot = await Slot.create(slotValues);
+                listSlotToSave.push(slotValues);
+
             }
             else {
                 const slotValues = {
                     userPlanning: candidate.userId,
                     period: convertIndexAsPeriod(s)
                 };
-                const slot = await Slot.create(slotValues);
+                listSlotToSave.push(slotValues);
+
             }
         }
     }
-
+    Slot.bulkCreate(
+        listSlotToSave,
+        {
+            ignoreDuplicates: true,
+        }
+    )
 }
 
 
