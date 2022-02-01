@@ -167,22 +167,22 @@ exports.createPlanning = async () => {
     //on fill les candidats
     for (var w = 0; w < listNEMCandidates.length; w++) {
         for (var e = 0; e < listDESCCompanies.length; e++) {
-            // const indexCandidate = listNEMCandidates[w].indexCandidate;
-            // const indexCompany = listDESCCompanies[e].indexCompany;
-            // if (matrixWishes[indexCompany][indexCandidate] == 0) {
-            // const indexNewSlot = checkFirstIndexOfAvailability(planningCandidate[indexCandidate], planningCompany[indexCompany], nbSlotPerUser);
-            // if (indexNewSlot >= 0) {
-            //     console.log('new meeting ' + indexCandidate + ' ' + indexCompany)
-            //     planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
-            //     planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
-            //     listNEMCandidates[w].addMeeting();
-            //     listDESCCompanies[e].addMeeting();
-            //     listDESCCompanies.sort((a, b) => (a.nbFreeSlots > b.nbFreeSlots) ? -1 : (a.nbFreeSlots === b.nbFreeSlots) ? ((a.nbFreeSlots > b.nbFreeSlots) ? -1 : 1) : 1)
-            //                         matrixWishes[indexCompany][indexCandidate] = -1;
+            const indexCandidate = listNEMCandidates[w].indexCandidate;
+            const indexCompany = listDESCCompanies[e].indexCompany;
+            if (matrixWishes[indexCompany][indexCandidate] == 0) {
+                const indexNewSlot = checkFirstIndexOfAvailability(planningCandidate[indexCandidate], planningCompany[indexCompany], nbSlotPerUser);
+                if (indexNewSlot >= 0) {
+                    console.log('new meeting ' + indexCandidate + ' ' + indexCompany)
+                    planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
+                    planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
+                    listNEMCandidates[w].addMeeting();
+                    listDESCCompanies[e].addMeeting();
+                    listDESCCompanies.sort((a, b) => (a.nbFreeSlots > b.nbFreeSlots) ? -1 : (a.nbFreeSlots === b.nbFreeSlots) ? ((a.nbFreeSlots > b.nbFreeSlots) ? -1 : 1) : 1)
+                    matrixWishes[indexCompany][indexCandidate] = -1;
 
-            // break;
-            // }
-            // }
+                    break;
+                }
+            }
         }
     }
 
