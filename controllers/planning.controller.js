@@ -109,10 +109,15 @@ exports.findByUserId = async (req, res) => {
 }
 
 exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
-  const period = req.params.period;
 
-  if (!(period)) {
-    return res.status(400).send("Period is required");
+  const obj = JSON.parse(req.body.data);
+  const {
+    userId,
+    period
+  } = obj;
+
+  if (!period || !userId) {
+    return res.status(400).send("Period and userId is required");
   }
 
   try {
@@ -121,7 +126,8 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
     const idFree = await Slot.findAll(
       {
         where: { period: period, userMet: null },
-        attributes: ['userPlanning']
+        attributes: ['userPlanning'],
+        raw: true, nest: true
       }
     );
 
@@ -129,14 +135,31 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
       return res.send();
     }
 
+    // //Fetch planning of the user ICI
+    const toRemove = await Slot.findAll(
+      {
+        where: { userPlanning: userId, userMet: { [Sequelize.Op.not]: null } },
+        attributes: ['userMet'],
+        raw: true
+      }
+    );
+
     const listId = [];
     for (var i = 0; i < idFree.length; i++) {
-      listId[listId.length] = idFree[i]['dataValues']['userPlanning'];
+      listId[listId.length] = idFree[i]['userPlanning'];
+    }
+
+    for (var i = 0; i < toRemove.length; i++) {
+      const idToRemove = toRemove[i]['userMet'];
+      const index = listId.indexOf(idToRemove);
+      if (index > -1) {
+        listId.splice(index, 1); // 2nd parameter means remove one item only
+      }
     }
 
     const freeCompanies = await CompanyProfile.findAll({
       where: {
-        userId: listId
+        userId: listId,
       },
       attributes: ['userId', 'companyName']
     }
@@ -149,10 +172,14 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
 }
 
 exports.findFreeCandidatesAtGivenPeriod = async (req, res) => {
-  const period = req.params.period;
+  const obj = JSON.parse(req.body.data);
+  const {
+    userId,
+    period
+  } = obj;
 
-  if (!(period)) {
-    return res.status(400).send("Period is required");
+  if (!period || !userId) {
+    return res.status(400).send("Period and userId is required");
   }
 
   try {
@@ -168,9 +195,26 @@ exports.findFreeCandidatesAtGivenPeriod = async (req, res) => {
       return res.send();
     }
 
+    // //Fetch planning of the user ICI
+    const toRemove = await Slot.findAll(
+      {
+        where: { userPlanning: userId, userMet: { [Sequelize.Op.not]: null } },
+        attributes: ['userMet'],
+        raw: true
+      }
+    );
+
     const listId = [];
     for (var i = 0; i < idFree.length; i++) {
       listId[listId.length] = idFree[i]['dataValues']['userPlanning'];
+    }
+
+    for (var i = 0; i < toRemove.length; i++) {
+      const idToRemove = toRemove[i]['userMet'];
+      const index = listId.indexOf(idToRemove);
+      if (index > -1) {
+        listId.splice(index, 1); // 2nd parameter means remove one item only
+      }
     }
 
     const freeCandidates = await CandidateProfile.findAll({
