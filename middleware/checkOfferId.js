@@ -7,24 +7,28 @@ module.exports = (req, res, next) => {
   try {
     const token = req.headers.authorization.split(" ")[1];
 
-    jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
+    jwt.verify(token, process.env.JWT_KEY, async (err, decoded) => {
       if (err) {
-        res.status(401).json({ error: "Invalid token." });
+        return res.status(401).json({ error: "Invalid token." });
       } else {
         if (decoded.role && decoded.role == "ENTREPRISE") {
-          const checkOffer = await Offers.findByPk(req.params.offerId);
+          const checkOffer = await Offers.findOne({
+            where: { id: req.params.offerId },
+          });
           if (checkOffer.companyProfileId == decoded.companyProfileId) {
             next();
           } else {
-            res.status(401).json({ error: "Unauthorized" });
+            return res.status(401).json({ error: "Unauthorized" });
           }
+        } else if (decoded.role && decoded.role == "ADMIN") {
+          next();
         } else {
-          res.status(401).json({ error: "Unauthorized" });
+          return res.status(401).json({ error: "Unauthorized" });
         }
       }
     });
   } catch {
-    res.status(401).json({
+    return res.status(401).json({
       error: "Invalid request.",
     });
   }
