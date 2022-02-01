@@ -1,23 +1,22 @@
 module.exports = app => {
-    const planning = require("../controllers/planning.controller.js");
-    const router = require("express").Router();
+  const planning = require("../controllers/planning.controller.js");
+  const router = require("express").Router();
 
-    router.post("", planning.generationPlanning);
+  router.post("", planning.generationPlanning);
 
-    router.get("/:userId", planning.findByUserId);
+  router.post('/freecompanies', planning.findFreeCompaniesAtGivenPeriod);
 
-    router.get('/candidate/:candidateProfileId', planning.findByCandidateId);
+  router.get("/:userId", planning.findByUserId);
 
-    router.get('/company/:companyProfileId', planning.findByCompanyId);
+  router.get('/candidate/:candidateProfileId', planning.findByCandidateId);
 
-    router.get('/freecompanies/:period', planning.findFreeCompaniesAtGivenPeriod);
+  router.get('/company/:companyProfileId', planning.findByCompanyId);
 
-    router.get('/freecandidates/:period', planning.findFreeCandidatesAtGivenPeriod);
+  router.get('/freecandidates/:period', planning.findFreeCandidatesAtGivenPeriod);
 
-    router.post("/meeting", planning.addMeeting);
+  router.post("/meeting", planning.addMeeting);
 
-    router.delete("/slot", planning.deleteSlot);
+  router.delete("/slot", planning.deleteSlot);
 
-    app.use('/api/planning', router);
-  };
-  
+  app.use('/api/planning', router);
+};

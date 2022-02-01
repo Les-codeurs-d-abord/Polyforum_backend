@@ -109,10 +109,16 @@ exports.findByUserId = async (req, res) => {
 }
 
 exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
-  const period = req.params.period;
 
-  if (!(period)) {
-    return res.status(400).send("Period is required");
+  console.log("le body -> " + req.body);
+  const obj = JSON.parse(req.body.data);
+  const {
+    userId,
+    period
+  } = obj;
+
+  if (!period || !userId) {
+    return res.status(400).send("Period and userId is required");
   }
 
   try {
@@ -121,7 +127,8 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
     const idFree = await Slot.findAll(
       {
         where: { period: period, userMet: null },
-        attributes: ['userPlanning']
+        attributes: ['userPlanning'],
+        raw: true, nest: true
       }
     );
 
@@ -129,14 +136,47 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
       return res.send();
     }
 
+    // //Fetch planning of the user ICI
+    const toRemove = await Slot.findAll(
+      {
+        where: { userPlanning: userId, userMet: { [Sequelize.Op.not]: null } },
+        attributes: ['userMet'],
+        raw: true
+      }
+    );
+
+    console.log("Id des trucs à remove")
+    for (var i = 0; i < toRemove.length; i++) {
+      console.log(toRemove[i]);
+    }
+
+
+
+
     const listId = [];
     for (var i = 0; i < idFree.length; i++) {
-      listId[listId.length] = idFree[i]['dataValues']['userPlanning'];
+      listId[listId.length] = idFree[i]['userPlanning'];
     }
+
+    console.log('liste des id initiale ' + listId)
+
+    for (var i = 0; i < toRemove.length; i++) {
+      const idToRemove = toRemove[i]['userMet'];
+      // if (listId.includes(idToRemove)) {
+      //   listId.shift(idToRemove);
+      // }
+
+      const index = listId.indexOf(idToRemove);
+      if (index > -1) {
+        listId.splice(index, 1); // 2nd parameter means remove one item only
+      }
+    }
+
+    console.log(listId);
 
     const freeCompanies = await CompanyProfile.findAll({
       where: {
-        userId: listId
+        userId: listId,
       },
       attributes: ['userId', 'companyName']
     }
