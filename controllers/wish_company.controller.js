@@ -10,13 +10,15 @@ exports.createWishCompany = async (req, res) => {
     return res.status(400).send("All input is required");
   }
 
-  const checkExistingWish = await Wish_Company.findOne({where: {
-    candidateProfileId: candidateProfileId,
-    companyProfileId: companyProfileId
-  }})
+  const checkExistingWish = await Wish_Company.findOne({
+    where: {
+      candidateProfileId: candidateProfileId,
+      companyProfileId: companyProfileId,
+    },
+  });
 
   if (checkExistingWish) {
-    return res.status(409).send("Cette entreprise a déja fait ce voeu")
+    return res.status(409).send("Cette entreprise a déja fait ce voeu");
   }
 
   const companyWishesCount = await Wish_Company.count({
@@ -24,10 +26,6 @@ exports.createWishCompany = async (req, res) => {
       companyProfileId: companyProfileId,
     },
   });
-
-  if (companyWishesCount >= 8) {
-    return res.status(409).send("Cette entreprise a déjà 8 voeux");
-  }
 
   const wishCompany = {
     candidateProfileId: candidateProfileId,
@@ -41,8 +39,7 @@ exports.createWishCompany = async (req, res) => {
 };
 
 exports.update = async (req, res) => {
-  const obj = JSON.parse(req.body.data);
-  const wishList = obj.wishList;
+  const wishList = JSON.parse(req.body.data);
   const companyProfileId = req.params.companyProfileId;
 
   if (!wishList) {
@@ -55,7 +52,12 @@ exports.update = async (req, res) => {
     for (let i = 0; i < wishList.length; i++) {
       await Wish_Company.update(
         { rank: i + 1 },
-        { where: { companyProfileId: companyProfileId, candidateProfileId: wishList[i] } }
+        {
+          where: {
+            companyProfileId: companyProfileId,
+            candidateProfileId: wishList[i],
+          },
+        }
       );
     }
     return res.send(
@@ -83,6 +85,26 @@ exports.findAllByCompanyId = async (req, res) => {
   }
 };
 
+exports.checkByCandidateIdAndCompanyId = async (req, res) => {
+  const { companyProfileId, candidateProfileId } = req.query;
+
+  if (!(companyProfileId && candidateProfileId)) {
+    return res.status(400).send("All input required");
+  }
+
+  try {
+    const checkWish = await Wish_Company.findOne({
+      where: {
+        companyProfileId: companyProfileId,
+        candidateProfileId: candidateProfileId,
+      },
+    });
+    return res.json({ check: checkWish ? true : false });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
 exports.delete = async (req, res) => {
   const { companyProfileId, candidateProfileId } = req.body;
 
@@ -92,11 +114,17 @@ exports.delete = async (req, res) => {
 
   try {
     const wishToDelete = await Wish_Company.findOne({
-      where: { companyProfileId: companyProfileId, candidateProfileId: candidateProfileId },
+      where: {
+        companyProfileId: companyProfileId,
+        candidateProfileId: candidateProfileId,
+      },
     });
 
     const wishDeleted = await Wish_Company.destroy({
-      where: { companyProfileId: companyProfileId, candidateProfileId: candidateProfileId },
+      where: {
+        companyProfileId: companyProfileId,
+        candidateProfileId: candidateProfileId,
+      },
     });
 
     // Wish deleted

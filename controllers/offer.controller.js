@@ -3,15 +3,15 @@ const Offers = db.offers;
 const Offer_Tags = db.offer_tags;
 const Offer_Links = db.offer_links;
 const Company_Profiles = db.company_profiles;
+const WishCandidate = db.wish_candidate;
 const { Sequelize } = require("../models");
 
-const path = require("path");
-const multer = require("multer");
 const fs = require("fs");
 
 // Create an offer
 exports.createOffer = async (req, res) => {
-  const obj = JSON.parse(req.body.data)
+  console.log(req.body.data);
+  const obj = JSON.parse(req.body.data);
   const {
     companyProfileId,
     name,
@@ -19,8 +19,8 @@ exports.createOffer = async (req, res) => {
     phoneNumber,
     email,
     address,
-    linksList,
-    tagsList,
+    links,
+    tags,
   } = obj;
 
   // Validate input
@@ -32,11 +32,16 @@ exports.createOffer = async (req, res) => {
       email &&
       phoneNumber &&
       address &&
-      linksList &&
-      tagsList
+      links &&
+      tags
     )
   ) {
     return res.status(400).send("All input is required");
+  }
+
+  const checkCompanyProfile = await Company_Profiles.findByPk(companyProfileId);
+  if (!checkCompanyProfile) {
+    return res.status(409).send("Ce profil d'entreprise n'existe pas");
   }
 
   const offerData = {
@@ -52,20 +57,34 @@ exports.createOffer = async (req, res) => {
     const offer = await Offers.create(offerData);
 
     // Create new tags
-    for (let i = 0; i < tagsList.length; i++) {
+    for (let i = 0; i < tags.length; i++) {
       await Offer_Tags.create({
         offerId: offer.id,
-        label: tagsList[i],
+        label: tags[i],
       });
     }
 
     // Create new links
-    for (let i = 0; i < linksList.length; i++) {
+    for (let i = 0; i < links.length; i++) {
       await Offer_Links.create({
         offerId: offer.id,
-        label: linksList[i],
+        label: links[i],
       });
     }
+
+    if (
+      phoneNumber &&
+      description &&
+      checkCompanyProfile.status === "Incomplet"
+    ) {
+      Company_Profiles.update(
+        { status: "Complet" },
+        {
+          where: { id: companyProfileId },
+        }
+      );
+    }
+
     return res.send(offer);
   } catch (err) {
     return res.status(500).send(err.message);
@@ -74,9 +93,10 @@ exports.createOffer = async (req, res) => {
 
 // Update  an offer
 exports.updateOffer = async (req, res) => {
+  const obj = JSON.parse(req.body.data);
+  const { name, description, phoneNumber, email, address, links, tags } = obj;
+
   const offerId = req.params.offerId;
-  const obj = JSON.parse(req.body)
-  const { name, description, phoneNumber, email, address, tags, links } = obj;
 
   // Validate input
   if (!(name && description && phoneNumber && email && address)) {
@@ -92,7 +112,7 @@ exports.updateOffer = async (req, res) => {
   };
 
   try {
-    const offer = await Offers.update(offerData, {
+    await Offers.update(offerData, {
       where: { id: offerId },
     });
 
@@ -104,7 +124,7 @@ exports.updateOffer = async (req, res) => {
     // Create new tags
     for (let i = 0; i < tags.length; i++) {
       await Offer_Tags.create({
-        offerId: offer.id,
+        offerId: offerId,
         label: tags[i],
       });
     }
@@ -117,11 +137,15 @@ exports.updateOffer = async (req, res) => {
     // Create new links
     for (let i = 0; i < links.length; i++) {
       await Offer_Links.create({
-        offerId: offer.id,
+        offerId: offerId,
         label: links[i],
       });
     }
-    return res.send(offer);
+
+    const updatedOffer = await Offers.findByPk(offerId, {
+      include: [{ model: Offer_Tags }, { model: Offer_Links }],
+    });
+    return res.send(updatedOffer);
   } catch (err) {
     return res.status(500).send(err.message);
   }
@@ -129,90 +153,35 @@ exports.updateOffer = async (req, res) => {
 
 exports.upload = async (req, res) => {
   const offerId = req.params.offerId;
+  try {
+    const filePath = req.files["offer"].path
+      .replace("data\\", "")
+      .replace("\\", "/");
 
-  const checkOffer = await Offers.findOne({
-    where: { id: offerId },
-  });
+    const checkOffer = await Offers.findOne({
+      where: { id: offerId },
+    });
 
-  if (!checkOffer) {
-    return res.status(404).send("Cette offre n'existe pas");
-  }
-
-  let deleteOldFile = false;
-  let extension = "";
-
-  var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      // Uploads is the Upload_folder_name
-      cb(null, "data/offerFiles");
-    },
-    filename: function (req, file, cb) {
-      extension = file.originalname.split(".")[1];
-      deleteOldFile = checkOffer.offerFile
-        ? extension != checkOffer.offerFile.split(".")[1]
-        : false;
-      cb(null, "offer_" + offerId + "." + extension);
-    },
-  });
-
-  // Define the maximum size for uploading
-  // picture i.e. 4 MB. it is optional
-  const maxSize = 4 * 1000 * 1000;
-
-  var upload = multer({
-    storage: storage,
-    limits: { fileSize: maxSize },
-    fileFilter: function (req, file, cb) {
-      // Set the filetypes, it is optional
-      var filetypes = /pdf|doc|docx/;
-      var mimetype = filetypes.test(file.mimetype);
-
-      var extname = filetypes.test(
-        path.extname(file.originalname).toLowerCase()
-      );
-
-      if (mimetype && extname) {
-        return cb(null, true);
+    Offers.update(
+      { offerFile: filePath },
+      {
+        where: { id: offerId },
       }
-
-      cb(
-        "Error: File upload only supports the " +
-          "following filetypes - " +
-          filetypes
-      );
-    },
-
-    // offerFile is the name of file attribute
-  }).single("offerFile");
-
-  upload(req, res, function (err) {
-    if (err) {
-      // ERROR occured (here it can be occured due
-      // to uploading image of size greater than
-      // 1MB or uploading different file type)
-      res.status(400).send(err);
-    } else {
-      // update cv in candidate profile
-      Offers.update(
-        { offerFile: "offerFiles/offer_" + offerId + "." + extension },
-        {
-          where: { id: offerId },
+    );
+    if (checkOffer.offerFile !== null) {
+      fs.unlink("data/" + checkOffer.offerFile, (err) => {
+        if (err) {
+          console.error(err);
+          return;
         }
-      );
-      if (deleteOldFile) {
-        fs.unlink("data/" + checkOffer.offerFile, (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-
-          //file removed
-        });
-      }
-      // SUCCESS, offer file successfully uploaded
-      res.send("Success, Offer file uploaded!");
+      });
     }
-  });
+    // SUCCESS, offer file successfully uploaded
+    return res.send(filePath);
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send(err.message);
+  }
 };
 
 exports.getAllOffer = async (req, res) => {
@@ -318,6 +287,27 @@ exports.deleteOffer = async (req, res) => {
   const offerId = req.params.offerId;
 
   try {
+    const wishes = await WishCandidate.findAll({
+      where: { offerId: offerId },
+    });
+
+    await Promise.all(
+      wishes.map(async (wish) => {
+        await WishCandidate.decrement(
+          { rank: 1 },
+          {
+            where: {
+              rank: { [Sequelize.Op.gt]: wish.rank },
+              candidateProfileId: wish.candidateProfileId,
+            },
+          }
+        );
+        await WishCandidate.destroy({
+          where: { id: wish.id },
+        });
+      })
+    );
+
     const offerDeleted = await Offers.destroy({
       where: { id: offerId },
     });

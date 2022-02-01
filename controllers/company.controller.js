@@ -6,13 +6,13 @@ const CompanyLink = db.company_links;
 const Offer = db.offers;
 const OfferLink = db.offer_links;
 const OfferTag = db.offer_tags;
+const WishCandidate = db.wish_candidate;
+const WishCompany = db.wish_company;
 
 const UserService = require("../services/user.service");
 const CompanyProfileService = require("../services/company_profile.service");
 const MailService = require("../services/mail.service");
 
-const path = require("path");
-const multer = require("multer");
 const fs = require("fs");
 
 // Create a company
@@ -90,6 +90,55 @@ exports.findById = async (req, res) => {
 exports.deleteById = async (req, res) => {
   const userId = req.params.userId;
   try {
+    const checkCompanyProfile = await CompanyProfile.findOne({
+      where: { userId: userId },
+    });
+    if (!checkCompanyProfile) {
+      return res.status(409).send("Cette entreprise n'existe pas");
+    }
+
+    await WishCompany.destroy({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+
+    await CompanyLink.destroy({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+
+    const offersToDelete = await Offer.findAll({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+
+    const offersToDeleteIds = offersToDelete.map((offerToDelete) => {
+      return offerToDelete.id;
+    });
+
+    const wishes = await WishCandidate.findAll({
+      where: { offerId: { [Sequelize.Op.in]: offersToDeleteIds } },
+      order: [["rank", "DESC"]],
+    });
+
+    await Promise.all(
+      wishes.map(async (wish) => {
+        await WishCandidate.decrement(
+          { rank: 1 },
+          {
+            where: {
+              rank: { [Sequelize.Op.gt]: wish.rank },
+              candidateProfileId: wish.candidateProfileId,
+            },
+          }
+        );
+        await WishCandidate.destroy({
+          where: { id: wish.id },
+        });
+      })
+    );
+
+    await Offer.destroy({
+      where: { id: { [Sequelize.Op.in]: offersToDeleteIds } },
+    });
+
     const profileDeleted = await CompanyProfile.destroy({
       where: { userId: userId },
     });
@@ -113,7 +162,7 @@ exports.deleteById = async (req, res) => {
 // Update a User by the id in the request
 exports.updateCompanyProfile = async (req, res) => {
   const userId = req.params.userId;
-  const obj = JSON.parse(req.body.data)
+  const obj = JSON.parse(req.body.data);
   const { companyName, phoneNumber, description, links } = obj;
   const updateContent = {
     companyName: companyName,
@@ -137,6 +186,24 @@ exports.updateCompanyProfile = async (req, res) => {
     await CompanyProfile.update(updateContent, {
       where: { userid: userId },
     });
+
+    // update status if company has an offer and completed profile
+    const checkOffer = await Offer.findOne({
+      where: { companyProfileId: checkCompanyProfile.id },
+    });
+    if (
+      checkOffer &&
+      phoneNumber &&
+      description &&
+      checkCompanyProfile.status === "Incomplet"
+    ) {
+      await CompanyProfile.update(
+        { status: "Complet" },
+        {
+          where: { userId: userId },
+        }
+      );
+    }
 
     // Delete previous links
     await CompanyLink.destroy({
@@ -169,6 +236,7 @@ exports.companyList = async (req, res) => {
       attributes: [
         "companyName",
         "logo",
+        "status",
         [
           Sequelize.literal(`(
             SELECT COUNT(*)
@@ -197,88 +265,34 @@ exports.companyList = async (req, res) => {
 
 exports.uploadLogo = async (req, res) => {
   const userId = req.params.userId;
+  try {
+    const filePath = req.files["logo"].path
+      .replace("data\\", "")
+      .replace("\\", "/");
 
-  const checkCompanyProfile = await CompanyProfile.findOne({
-    where: { userId: userId },
-  });
+    const checkCompanyProfile = await CompanyProfile.findOne({
+      where: { userId: userId },
+    });
 
-  if (!checkCompanyProfile) {
-    return res.status(404).send("Cette entreprise n'existe pas");
-  }
-
-  let deleteOldLogo = false;
-  let extension = "";
-
-  var storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      // Uploads is the Upload_folder_name
-      cb(null, "data/companyLogos");
-    },
-    filename: function (req, file, cb) {
-      extension = file.originalname.split(".")[1];
-      deleteOldLogo = checkCompanyProfile.logo
-        ? extension != checkCompanyProfile.logo.split(".")[1]
-        : false;
-      cb(null, "companyLogo_" + userId + "." + extension);
-    },
-  });
-
-  // Define the maximum size for uploading
-  // picture i.e. 4 MB. it is optional
-  const maxSize = 4 * 1000 * 1000;
-
-  var upload = multer({
-    storage: storage,
-    limits: { fileSize: maxSize },
-    fileFilter: function (req, file, cb) {
-      // Set the filetypes, it is optional
-      var filetypes = /jpeg|jpg|png/;
-      var mimetype = filetypes.test(file.mimetype);
-
-      var extname = filetypes.test(
-        path.extname(file.originalname).toLowerCase()
-      );
-
-      if (mimetype && extname) {
-        return cb(null, true);
+    CompanyProfile.update(
+      { logo: filePath },
+      {
+        where: { userId: userId },
       }
-
-      cb(
-        "Error: File upload only supports the " +
-          "following filetypes - " +
-          filetypes
-      );
-    },
-
-    // logo is the name of file attribute
-  }).single("logo");
-
-  upload(req, res, function (err) {
-    if (err) {
-      // ERROR occured (here it can be occured due
-      // to uploading image of size greater than
-      // 1MB or uploading different file type)
-      res.status(400).send(err);
-    } else {
-      // update logo in company profile
-      CompanyProfile.update(
-        { logo: "companyLogos/companyLogo_" + userId + "." + extension },
-        {
-          where: { userId: userId },
+    );
+    if (checkCompanyProfile.logo !== null) {
+      fs.unlink("data/" + checkCompanyProfile.logo, (err) => {
+        if (err) {
+          console.error(err);
+          return;
         }
-      );
-      if (deleteOldLogo) {
-        fs.unlink("data/" + checkCompanyProfile.logo, (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-        });
-      }
-      // SUCCESS, image successfully uploaded
-      res.send("Success, Image uploaded!");
+      });
     }
-  });
+    // SUCCESS, Image successfully uploaded
+    res.send(filePath);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 };
 
 exports.findOffersById = async (req, res) => {
@@ -295,7 +309,24 @@ exports.findOffersById = async (req, res) => {
   try {
     const offers = await Offer.findAll({
       where: { companyProfileId: checkCompanyProfile.id },
-      include: [{ model: OfferLink }, { model: OfferTag }, {model: CompanyProfile}],
+      include: [
+        { model: OfferLink },
+        { model: OfferTag },
+        { model: CompanyProfile },
+      ],
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM wish_candidates AS wish_candidate
+            WHERE
+            wish_candidate.offerId = offer.id
+        )`),
+            "candidatesWishesCount",
+          ],
+        ],
+      },
     });
 
     return res.send(offers);

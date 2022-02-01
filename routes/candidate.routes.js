@@ -1,4 +1,5 @@
 module.exports = (app) => {
+  var multiparty = require("connect-multiparty");
   const candidateController = require("../controllers/candidate.controller.js");
 
   const router = require("express").Router();
@@ -19,10 +20,26 @@ module.exports = (app) => {
   router.post("/", candidateController.createCandidate);
 
   // Upload a profile picture
-  router.post("/:userId/uploadLogo", candidateController.uploadLogo);
+  multipartyLogoMiddleware = multiparty({
+    uploadDir: "./data/candidateLogos",
+    maxFilesSize: "4000000",
+  });
+  router.post(
+    "/:userId/uploadLogo",
+    multipartyLogoMiddleware,
+    candidateController.uploadLogo
+  );
 
-  // Upload a profile picture
-  router.post("/:userId/uploadCV", candidateController.uploadCV);
+  // Upload a CV
+  multipartyCVMiddleware = multiparty({
+    uploadDir: "./data/candidateCV",
+    maxFilesSize: "4000000",
+  });
+  router.post(
+    "/:userId/uploadCV",
+    multipartyCVMiddleware,
+    candidateController.uploadCV
+  );
 
   // Update a candidate profile with id
   router.put("/:userId", candidateController.updateCandidateProfile);

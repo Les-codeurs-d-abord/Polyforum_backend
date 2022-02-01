@@ -6,6 +6,7 @@ const CandidateProfile = db.candidate_profiles;
 const CandidateLink = db.candidate_links;
 const CandidateTag = db.candidate_tags;
 const CompanyProfile = db.company_profiles;
+const CompanyLink = db.company_links;
 
 var jwt = require("jsonwebtoken");
 
@@ -35,6 +36,11 @@ exports.getToken = async (req, res) => {
 
           if (user.role === User.ROLES.CANDIDATE) {
             CandidateProfile.update(
+              { status: "Incomplet" },
+              { where: { userId: user.id, status: "Jamais connecté" } }
+            ).catch((error) => res.status(500).json({ error }));
+          } else if (user.role === User.ROLES.COMPANY) {
+            CompanyProfile.update(
               { status: "Incomplet" },
               { where: { userId: user.id, status: "Jamais connecté" } }
             ).catch((error) => res.status(500).json({ error }));
@@ -72,7 +78,7 @@ exports.getUserFromToken = async (req, res) => {
               model: User,
               attributes: ["id", "email", "role"],
             },
-              { model: CandidateLink },
+            { model: CandidateLink },
             { model: CandidateTag },
           ],
         });
@@ -92,6 +98,7 @@ exports.getUserFromToken = async (req, res) => {
               model: User,
               attributes: ["id", "email", "role"],
             },
+            { model: CompanyLink },
           ],
         });
         if (!company_profile) {
@@ -110,7 +117,7 @@ exports.getUserFromToken = async (req, res) => {
         if (!admin_profile) {
           return res.status(404).send("Pas d'admin trouvé");
         }
-        return res.send({user: admin_profile});
+        return res.send({ user: admin_profile });
       } catch (err) {
         return res.status(500).send(err.message);
       }

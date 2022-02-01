@@ -27,10 +27,6 @@ exports.createWishCandidate = async (req, res) => {
     },
   });
 
-  if (candidateWishesCount >= 8) {
-    return res.status(409).send("Ce candidat a déjà 8 voeux");
-  }
-
   const wishCandidate = {
     candidateProfileId: candidateProfileId,
     offerId: offerId,
@@ -102,10 +98,7 @@ exports.checkByCandidateIdAndOfferId = async (req, res) => {
         candidateProfileId: candidateProfileId,
       },
     });
-    if (checkWish) {
-      return res.send();
-    }
-    res.status(404).send();
+    return res.json({ check: checkWish ? true : false });
   } catch (err) {
     res.status(500).send(err.message);
   }
