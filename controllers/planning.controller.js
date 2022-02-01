@@ -13,9 +13,9 @@ const { Sequelize } = require("../models");
 exports.generationPlanning = async (req, res) => {
   try {
     PlanningService.createPlanning();
-    return "Planning généré avec succès"
+    return "Planning généré avec succès."
   } catch (err) {
-    return "Une erreur est survenue pendant la génération du planning"
+    return "Une erreur est survenue pendant la génération du planning."
   }
 }
 
