@@ -27,7 +27,7 @@ exports.setInscriptionPhase = async () => {
 // Set forum phase to VOEUX
 exports.setWishPhase = async () => {
   Phase.update({ currentPhase: "VOEUX" }, { where: {} })
-    .then(() => {
+    .then(async () => {
       const candidatesAndCompanies = await User.findAll({
         where: {
           role: {
@@ -50,7 +50,7 @@ exports.setWishPhase = async () => {
 // Set forum phase to PLANNING
 exports.setPlanningPhase = async () => {
   Phase.update({ currentPhase: "PLANNING" }, { where: {} })
-    .then(() => {
+    .then(async () => {
       const candidatesAndCompanies = await User.findAll({
         where: {
           role: {
