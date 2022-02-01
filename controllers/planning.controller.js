@@ -11,8 +11,12 @@ const CompanyService = require("../services/company_profile.service");
 const { Sequelize } = require("../models");
 
 exports.generationPlanning = async (req, res) => {
+  try {
     PlanningService.createPlanning();
-    return res.send("Planning généré");
+    return "Planning généré avec succès"
+  } catch (err) {
+    return "Une erreur est survenue pendant la génération du planning"
+  }
 }
 
 exports.findByCandidateId = async (req, res) => {
@@ -47,11 +51,11 @@ exports.findByCandidateId = async (req, res) => {
   } catch (err) {
     throw err;
   }
-    
+
 }
 
 exports.findByCompanyId = async (req, res) => {
-  
+
   try {
     const companyProfileId = req.params.companyProfileId;
 
@@ -115,10 +119,10 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
 
     //On recherche les slots de ce planning
     const idFree = await Slot.findAll(
-      { 
-        where: { period: period, userMet: null},
+      {
+        where: { period: period, userMet: null },
         attributes: ['userPlanning']
-    }
+      }
     );
 
     if (!idFree) {
@@ -126,12 +130,13 @@ exports.findFreeCompaniesAtGivenPeriod = async (req, res) => {
     }
 
     const listId = [];
-    for (var i = 0; i < idFree.length ; i ++) {
+    for (var i = 0; i < idFree.length; i++) {
       listId[listId.length] = idFree[i]['dataValues']['userPlanning'];
     }
 
     const freeCompanies = await CompanyProfile.findAll({
-      where: { userId: listId
+      where: {
+        userId: listId
       },
       attributes: ['userId', 'companyName']
     }
@@ -153,10 +158,10 @@ exports.findFreeCandidatesAtGivenPeriod = async (req, res) => {
   try {
 
     const idFree = await Slot.findAll(
-      { 
-        where: { period: period, userMet: null},
+      {
+        where: { period: period, userMet: null },
         attributes: ['userPlanning']
-    }
+      }
     );
 
     if (!idFree) {
@@ -164,12 +169,13 @@ exports.findFreeCandidatesAtGivenPeriod = async (req, res) => {
     }
 
     const listId = [];
-    for (var i = 0; i < idFree.length ; i ++) {
+    for (var i = 0; i < idFree.length; i++) {
       listId[listId.length] = idFree[i]['dataValues']['userPlanning'];
     }
 
     const freeCandidates = await CandidateProfile.findAll({
-      where: { userId: listId
+      where: {
+        userId: listId
       },
       attributes: ['userId', 'firstName', 'lastName']
     }
@@ -190,14 +196,15 @@ exports.addMeeting = async (req, res) => {
     period
   } = obj;
 
-  if (!userIdCandidate || !userIdCompany || !period)  {
+  if (!userIdCandidate || !userIdCompany || !period) {
     return res.status(400).send("Au moins un champ manquant (userId/period)");
   }
 
   //Check if meeting already exist
   const slot = await Slot.findOne(
-    { where:
-      { userPlanning: userIdCandidate, userMet: userIdCompany } 
+    {
+      where:
+        { userPlanning: userIdCandidate, userMet: userIdCompany }
     });
   if (slot) {
     return res.status(409).send("Une rencontre est déjà prévue pour ces deux utilisateurs");
@@ -208,7 +215,7 @@ exports.addMeeting = async (req, res) => {
   if (!userCandidate) {
     return res.status(409).send("Le candidat n'existe pas");
   } else if (userCandidate['dataValues']['role'] != "CANDIDAT") {
-    return res.status(409).send("L'utilisateur " + userIdCandidate +" n'est pas un candidat");
+    return res.status(409).send("L'utilisateur " + userIdCandidate + " n'est pas un candidat");
   }
 
   //Check if company exist
@@ -216,13 +223,13 @@ exports.addMeeting = async (req, res) => {
   if (!userCompany) {
     return res.status(409).send("L'entreprise n'existe pas");
   } else if (userCompany['dataValues']['role'] != "ENTREPRISE") {
-    return res.status(409).send("L'utilisateur " + userIdCompany +" n'est pas une entreprise");
+    return res.status(409).send("L'utilisateur " + userIdCompany + " n'est pas une entreprise");
   }
 
   //Retrieve company and candidate name
   const candidate = await CandidateService.findById(userIdCandidate);
   const company = await CompanyService.findById(userIdCompany);
-  
+
   if (!candidate) {
     return res.status(409).send("Le candidat n'existe pas");
   }
@@ -251,29 +258,29 @@ exports.addMeeting = async (req, res) => {
       companyName: company.companyName,
       candidateName: candidate.firstName + " " + candidate.lastName,
       logo: candidate.logo
-  };
-  // const slotA = await Slot.create(slotValuesA);
+    };
+    // const slotA = await Slot.create(slotValuesA);
 
-  const slotA = await Slot.update(slotValuesA, {
-    where: { userPlanning: userIdCompany, period:period },
-  });
+    const slotA = await Slot.update(slotValuesA, {
+      where: { userPlanning: userIdCompany, period: period },
+    });
 
-  if (!slotA) {
-    return res.status(409).send("Impossible de créer la rencontre");
-  }
+    if (!slotA) {
+      return res.status(409).send("Impossible de créer la rencontre");
+    }
 
-  //slot candidate
-      //Check if is there is a free slot
-      const olderSlotB = await Slot.findOne({
-        where: {
-          period: period,
-          userPlanning: userIdCandidate
-        }
-      });
-  
-      if (!olderSlotB) {
-        return res.status(409).send("Le planning n'était pas généré par le candidat");
+    //slot candidate
+    //Check if is there is a free slot
+    const olderSlotB = await Slot.findOne({
+      where: {
+        period: period,
+        userPlanning: userIdCandidate
       }
+    });
+
+    if (!olderSlotB) {
+      return res.status(409).send("Le planning n'était pas généré par le candidat");
+    }
 
     const slotValuesB = {
       userMet: userIdCompany,
@@ -283,7 +290,7 @@ exports.addMeeting = async (req, res) => {
     };
 
     const slotB = await Slot.update(slotValuesB, {
-      where: { userPlanning: userIdCandidate, period:period },
+      where: { userPlanning: userIdCandidate, period: period },
     });
 
     if (!slotB) {
@@ -310,12 +317,12 @@ exports.deleteSlot = async (req, res) => {
 
   //Check if slots exist
   const slotToDelete = await Slot.findAll({
-    where: { 
+    where: {
       [Sequelize.Op.or]: [
         { userPlanning: userIdCandidate, userMet: userIdCompany, period: period },
         { userPlanning: userIdCompany, userMet: userIdCandidate, period: period }
       ]
-     },
+    },
   });
 
   if (!slotToDelete || !(slotToDelete.length == 2)) {
@@ -330,12 +337,12 @@ exports.deleteSlot = async (req, res) => {
   };
 
   const result = await Slot.update(newSlotValues, {
-    where: { 
+    where: {
       [Sequelize.Op.or]: [
         { userPlanning: userIdCandidate, userMet: userIdCompany, period: period },
         { userPlanning: userIdCompany, userMet: userIdCandidate, period: period }
       ]
-     },
+    },
   });
 
   return res.status(201).send("Rencontre supprimée avec succès");
