@@ -28,3 +28,6 @@ benchmarks/graphs
 
 # env variables (THAT SHOULD NOT BE COMMITED)
 .env
+
+# IDE
+.idea/

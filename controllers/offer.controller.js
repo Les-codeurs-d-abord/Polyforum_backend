@@ -10,6 +10,7 @@ const fs = require("fs");
 
 // Create an offer
 exports.createOffer = async (req, res) => {
+  console.log(req.body.data);
   const obj = JSON.parse(req.body.data);
   const { name, description, phoneNumber, email, address, links, tags } = obj;
   const companyProfileId = req.params.companyProfileId;
@@ -28,6 +29,11 @@ exports.createOffer = async (req, res) => {
     )
   ) {
     return res.status(400).send("All input is required");
+  }
+
+  const checkCompanyProfile = await Company_Profiles.findByPk(companyProfileId);
+  if (!checkCompanyProfile) {
+    return res.status(409).send("Ce profil d'entreprise n'existe pas");
   }
 
   const offerData = {
@@ -57,6 +63,20 @@ exports.createOffer = async (req, res) => {
         label: links[i],
       });
     }
+
+    if (
+      phoneNumber &&
+      description &&
+      checkCompanyProfile.status === "Incomplet"
+    ) {
+      Company_Profiles.update(
+        { status: "Complet" },
+        {
+          where: { id: companyProfileId },
+        }
+      );
+    }
+
     return res.send(offer);
   } catch (err) {
     return res.status(500).send(err.message);
@@ -131,13 +151,13 @@ exports.upload = async (req, res) => {
       .replace("\\", "/");
 
     const checkOffer = await Offers.findOne({
-      where: { offerId: offerId },
+      where: { id: offerId },
     });
 
     Offers.update(
       { offerFile: filePath },
       {
-        where: { offerId: offerId },
+        where: { id: offerId },
       }
     );
     if (checkOffer.offerFile !== null) {
@@ -149,8 +169,9 @@ exports.upload = async (req, res) => {
       });
     }
     // SUCCESS, offer file successfully uploaded
-    res.send(filePath);
+    return res.send(filePath);
   } catch (err) {
+    console.log(err.message);
     res.status(500).send(err.message);
   }
 };
@@ -278,12 +299,22 @@ exports.deleteOffer = async (req, res) => {
         });
       })
     );
+    const checkOffer = await Offers.findByPk(offerId);
 
     const offerDeleted = await Offers.destroy({
       where: { id: offerId },
     });
     if (offerDeleted) {
       // Offer deleted
+      const offersRemaining = await Offers.findOne({
+        where: { companyProfileId: checkOffer.companyProfileId },
+      });
+      if (!offersRemaining) {
+        await Company_Profiles.update(
+          { status: "Incomplet" },
+          { where: { id: checkOffer.companyProfileId, status: "Complet" } }
+        );
+      }
       return res.status(200).send("Offre supprimée");
     } else {
       // Offer not found

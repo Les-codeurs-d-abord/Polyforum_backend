@@ -2,6 +2,7 @@ module.exports = (app) => {
   var multiparty = require("connect-multiparty");
   const offer = require("../controllers/offer.controller.js");
   const router = require("express").Router();
+  var multiparty = require('connect-multiparty');
 
   // Create offer
   router.post("/:companyProfileId", offer.createOffer);
@@ -11,7 +12,7 @@ module.exports = (app) => {
     uploadDir: "./data/offerFiles",
     maxFilesSize: "4000000",
   });
-  router.post("/:offerId/upload", multipartyLogoMiddleware, offer.upload);
+  router.post("/:offerId/upload", multipartyOfferMiddleware, offer.upload);
 
   // Get all offers
   router.get("", offer.getAllOffer);

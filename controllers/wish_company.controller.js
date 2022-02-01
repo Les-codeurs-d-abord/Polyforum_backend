@@ -99,10 +99,7 @@ exports.checkByCandidateIdAndCompanyId = async (req, res) => {
         candidateProfileId: candidateProfileId,
       },
     });
-    if (checkWish) {
-      return res.send();
-    }
-    res.status(404).send();
+    return res.json({ check: checkWish ? true : false });
   } catch (err) {
     res.status(500).send(err.message);
   }
