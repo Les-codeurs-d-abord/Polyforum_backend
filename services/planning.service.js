@@ -87,17 +87,30 @@ exports.createPlanning = async () => {
     }
 
     //On cherche les voeux communs aux deux parties
+    let listWishesToAdd = new Array();
     for (var w = 0; w < allCompanies.length; w++) {
         for (var w2 = 0; w2 < allCandidates.length; w2++) {
             if (matrixWishes[w][w2] == 3) {
-                const company = allCompanies[w];
-                const candidate = allCandidates[w2];
-                const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[w], planningCandidate[w2], nbSlotPerUser);
-                if (indexNewSlot >= 0) {
-                    planningCompany[w][indexNewSlot] = candidate.userId;
-                    planningCandidate[w2][indexNewSlot] = company.userId;
-                }
+                console.log('company ' + w + ' candidate ' + w2);
+                listWishesToAdd[listWishesToAdd.length] = (w * allCandidates.length + w2);
+
             }
+        }
+    }
+
+    //On  mélange ces wish
+    listWishesToAdd = listWishesToAdd.sort(() => (Math.random() > .5) ? 1 : -1);
+
+    for (var w = 0; w < listWishesToAdd.length; w++) {
+        const indexCandidate = listWishesToAdd[w] % allCandidates.length;
+        const indexCompany = Math.floor(listWishesToAdd[w] / allCandidates.length);
+
+        const company = allCompanies[indexCompany];
+        const candidate = allCandidates[indexCandidate];
+        const indexNewSlot = checkFirstIndexOfAvailability(planningCompany[indexCompany], planningCandidate[indexCandidate], nbSlotPerUser);
+        if (indexNewSlot >= 0) {
+            planningCompany[indexCompany][indexNewSlot] = candidate.userId;
+            planningCandidate[indexCandidate][indexNewSlot] = company.userId;
         }
     }
 
@@ -135,12 +148,6 @@ exports.createPlanning = async () => {
     for (var w = 0; w < allCompanies.length; w++) {
         const nbFilledSlot = getNumberFilledSlots(planningCompany[w], nbSlotPerUser);
         company = new companyWithNbSlot(w, nbSlotPerUser - nbFilledSlot);
-        // if (nbFilledSlot < minNbMeeting) {
-        //     const diff = minNbMeeting - nbFilledSlot;
-        //     for (var i = 0; i < diff; i++) {
-        //         listNEMCompanies[listNEMCompanies.length] = company;
-        //     }
-        // }
         listDESCCompanies[listDESCCompanies.length] = company;
     }
 
@@ -172,7 +179,6 @@ exports.createPlanning = async () => {
             if (matrixWishes[indexCompany][indexCandidate] == 0) {
                 const indexNewSlot = checkFirstIndexOfAvailability(planningCandidate[indexCandidate], planningCompany[indexCompany], nbSlotPerUser);
                 if (indexNewSlot >= 0) {
-                    console.log('new meeting ' + indexCandidate + ' ' + indexCompany)
                     planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
                     planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
                     listNEMCandidates[w].addMeeting();
@@ -212,7 +218,6 @@ exports.createPlanning = async () => {
                 console.log(indexCompany)
 
                 if (indexNewSlot >= 0) {
-                    console.log('new meeting ' + indexCandidate + ' ' + indexCompany)
                     planningCompany[indexCompany][indexNewSlot] = allCandidates[indexCandidate].userId;
                     planningCandidate[indexCandidate][indexNewSlot] = allCompanies[indexCompany].userId;
                     listNEMCompanies[w].addMeeting();
@@ -224,10 +229,6 @@ exports.createPlanning = async () => {
             }
         }
     }
-
-
-    //on fill les entreprises
-
 
     // ----- Enregistrement des données en base ----- \\
     // On efface les vielles valeurs de planning et de slot
@@ -305,9 +306,7 @@ exports.createPlanning = async () => {
         }
     }
 
-
 }
-
 
 
 function checkFirstIndexOfAvailability(planningCompany, planningCandidate, nbSlotPerUser) {
