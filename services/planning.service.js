@@ -10,7 +10,6 @@ const { Sequelize } = require("../models");
 
 
 exports.createPlanning = async () => {
-    console.log("Début création du planning");
     //Récupération des voeux et informations enregistées en base de données
     const wishesCompanies = await Wish_Company.findAll({
         order: [
@@ -93,7 +92,7 @@ exports.createPlanning = async () => {
     for (var w = 0; w < allCompanies.length; w++) {
         for (var w2 = 0; w2 < allCandidates.length; w2++) {
             if (matrixWishes[w][w2] == 3) {
-                listWishesToAdd[listWishesToAdd.length] = (w * allCandidates.length + w2);
+                listWishesToAdd.push((w * allCandidates.length + w2));
             }
         }
     }
@@ -148,7 +147,7 @@ exports.createPlanning = async () => {
     for (var w = 0; w < allCompanies.length; w++) {
         const nbFilledSlot = getNumberFilledSlots(planningCompany[w], nbSlotPerUser);
         company = new companyWithNbSlot(w, nbSlotPerUser - nbFilledSlot);
-        listDESCCompanies[listDESCCompanies.length] = company;
+        listDESCCompanies.push(company);
     }
 
     listDESCCompanies.sort((a, b) => (a.nbFreeSlots > b.nbFreeSlots) ? -1 : (a.nbFreeSlots === b.nbFreeSlots) ? ((a.nbFreeSlots > b.nbFreeSlots) ? -1 : 1) : 1)
@@ -161,10 +160,10 @@ exports.createPlanning = async () => {
         if (nbFilledSlot < minNbMeeting) {
             const diff = minNbMeeting - nbFilledSlot;
             for (var i = 0; i < diff; i++) {
-                listNEMCandidates[listNEMCandidates.length] = c;
+                listNEMCandidates.push(c);
             }
         }
-        listDESCCandidates[listDESCCandidates.length] = c
+        listDESCCandidates.push(c);
     }
     listDESCCandidates.sort((a, b) => (a.nbFreeSlots > b.nbFreeSlots) ? -1 : (a.nbFreeSlots === b.nbFreeSlots) ? ((a.nbFreeSlots > b.nbFreeSlots) ? -1 : 1) : 1)
 
@@ -200,8 +199,7 @@ exports.createPlanning = async () => {
         if (nbFilledSlot < minNbMeeting) {
             const diff = minNbMeeting - nbFilledSlot;
             for (var i = 0; i < diff; i++) {
-                listNEMCompanies[listNEMCompanies.length] = company;
-                // listNEMCompanies.push(company);
+                listNEMCompanies.push(company);
             }
         }
     }
