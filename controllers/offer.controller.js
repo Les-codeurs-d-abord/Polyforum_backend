@@ -288,12 +288,22 @@ exports.deleteOffer = async (req, res) => {
         });
       })
     );
+    const checkOffer = await Offers.findByPk(offerId);
 
     const offerDeleted = await Offers.destroy({
       where: { id: offerId },
     });
     if (offerDeleted) {
       // Offer deleted
+      const offersRemaining = await Offers.findOne({
+        where: { companyProfileId: checkOffer.companyProfileId },
+      });
+      if (!offersRemaining) {
+        await Company_Profiles.update(
+          { status: "Incomplet" },
+          { where: { id: checkOffer.companyProfileId, status: "Complet" } }
+        );
+      }
       return res.status(200).send("Offre supprimée");
     } else {
       // Offer not found
