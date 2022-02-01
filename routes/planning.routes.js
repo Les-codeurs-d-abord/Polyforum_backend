@@ -6,13 +6,13 @@ module.exports = app => {
 
   router.post('/freecompanies', planning.findFreeCompaniesAtGivenPeriod);
 
+  router.post('/freecandidates', planning.findFreeCandidatesAtGivenPeriod);
+
   router.get("/:userId", planning.findByUserId);
 
   router.get('/candidate/:candidateProfileId', planning.findByCandidateId);
 
   router.get('/company/:companyProfileId', planning.findByCompanyId);
-
-  router.get('/freecandidates/:period', planning.findFreeCandidatesAtGivenPeriod);
 
   router.post("/meeting", planning.addMeeting);
 
