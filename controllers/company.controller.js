@@ -289,9 +289,9 @@ exports.uploadLogo = async (req, res) => {
       });
     }
     // SUCCESS, Image successfully uploaded
-    res.send(filePath);
+    return res.send(filePath);
   } catch (err) {
-    res.status(500).send(err.message);
+    return res.status(500).send(err.message);
   }
 };
 

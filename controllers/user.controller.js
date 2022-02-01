@@ -226,7 +226,7 @@ exports.sendRemindersCandidates = async (req, res) => {
         );
         break;
       default:
-        res.status(400).send("Pas de rappel prévu durant cette phase");
+        return res.status(400).send("Pas de rappel prévu durant cette phase");
     }
     return res.send();
   } catch (err) {
@@ -300,7 +300,7 @@ exports.sendRemindersCompanies = async (req, res) => {
         );
         break;
       default:
-        res.status(400).send("Pas de rappel prévu durant cette phase");
+        return res.status(400).send("Pas de rappel prévu durant cette phase");
     }
     return res.send();
   } catch (err) {

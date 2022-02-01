@@ -274,9 +274,9 @@ exports.uploadLogo = async (req, res) => {
       });
     }
     // SUCCESS, Image successfully uploaded
-    res.send(filePath);
+    return res.send(filePath);
   } catch (err) {
-    res.status(500).send(err.message);
+    return res.status(500).send(err.message);
   }
 };
 
@@ -317,9 +317,9 @@ exports.uploadCV = async (req, res) => {
       });
     }
     // SUCCESS, CV successfully uploaded
-    res.send(filePath);
+    return res.send(filePath);
   } catch (err) {
-    res.status(500).send(err.message);
+    return res.status(500).send(err.message);
   }
 };
 

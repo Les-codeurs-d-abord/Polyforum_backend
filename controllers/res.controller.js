@@ -5,10 +5,10 @@ exports.getFile = async (req, res) => {
   console.log("Get File");
   let filePath = path.join(__dirname, "../data/", req.params.folder, "/", req.params.file);
 
-  res.sendFile(filePath, function (err) {
+  return res.sendFile(filePath, function (err) {
     if (err) {
       console.log(err);
-      res.status(err.status).end();
+      return res.status(err.status).end();
     } else {
       console.log('Sent:', filePath);
     }

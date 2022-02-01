@@ -8,7 +8,7 @@ module.exports = (req, res, next) => {
 
     jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
       if(err) {
-        res.status(401).json({
+        return res.status(401).json({
           error: "Invalid token."
         });
       }
@@ -18,7 +18,7 @@ module.exports = (req, res, next) => {
     });
 
   } catch {
-    res.status(401).json({
+    return res.status(401).json({
       error: "Invalid request."
     });
   }

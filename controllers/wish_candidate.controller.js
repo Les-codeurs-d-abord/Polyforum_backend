@@ -34,8 +34,12 @@ exports.createWishCandidate = async (req, res) => {
   };
 
   Wish_Candidate.create(wishCandidate)
-    .then((value) => res.status(201).json({ value }))
-    .catch((error) => res.status(400).json({ error }));
+    .then((value) => {
+      return res.status(201).json({ value });
+    })
+    .catch((error) => {
+      return res.status(400).json({ error });
+    });
 };
 
 exports.update = async (req, res) => {
@@ -100,7 +104,7 @@ exports.checkByCandidateIdAndOfferId = async (req, res) => {
     });
     return res.json({ check: checkWish ? true : false });
   } catch (err) {
-    res.status(500).send(err.message);
+    return res.status(500).send(err.message);
   }
 };
 
@@ -108,7 +112,7 @@ exports.delete = async (req, res) => {
   const { offerId, candidateProfileId } = req.body;
 
   if (!(offerId && candidateProfileId)) {
-    res.status(400).send("All input required");
+    return res.status(400).send("All input required");
   }
 
   try {

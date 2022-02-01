@@ -180,7 +180,7 @@ exports.upload = async (req, res) => {
     return res.send(filePath);
   } catch (err) {
     console.log(err.message);
-    res.status(500).send(err.message);
+    return res.status(500).send(err.message);
   }
 };
 
@@ -279,8 +279,12 @@ exports.createOfferLink = async (req, res) => {
   };
 
   Offer_Links.create(offerLink)
-    .then((value) => res.status(201).json({ value }))
-    .catch((error) => res.status(400).json({ error }));
+    .then((value) => {
+      return res.status(201).json({ value });
+    })
+    .catch((error) => {
+      return res.status(400).json({ error });
+    });
 };
 
 exports.deleteOffer = async (req, res) => {
@@ -375,8 +379,12 @@ exports.createOfferTag = async (req, res) => {
   };
 
   Offer_Tags.create(offer_tag)
-    .then((value) => res.status(201).json({ value }))
-    .catch((error) => res.status(400).json({ error }));
+    .then((value) => {
+      return res.status(201).json({ value });
+    })
+    .catch((error) => {
+      return res.status(400).json({ error });
+    });
 };
 
 //Find one by Id
