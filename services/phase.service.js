@@ -1,5 +1,7 @@
 const db = require("../models");
 const Phase = db.phase;
+const User = db.users;
+const MailService = require("../services/mail.service");
 
 // Set forum phase to INSCRIPTION
 exports.setInscriptionPhase = async () => {
@@ -24,18 +26,20 @@ exports.setInscriptionPhase = async () => {
 
 // Set forum phase to VOEUX
 exports.setWishPhase = async () => {
-  const existingPhase = await Phase.findOne({ where: {} });
-  if (!existingPhase) {
-    Phase.create({ currentPhase: "VOEUX" })
-      .then(() => {
-        return;
-      })
-      .catch((err) => {
-        throw err;
-      });
-  }
   Phase.update({ currentPhase: "VOEUX" }, { where: {} })
     .then(() => {
+      const candidatesAndCompanies = await User.findAll({
+        where: {
+          role: {
+            [Sequelize.Op.or]: [User.ROLES.CANDIDATE, User.ROLES.COMPANY],
+          },
+        },
+      });
+      await Promise.all(
+        candidatesAndCompanies.map(async (user) => {
+          // await MailService.sendWishPhase(user.email);
+        })
+      );
       return;
     })
     .catch((err) => {
@@ -45,18 +49,20 @@ exports.setWishPhase = async () => {
 
 // Set forum phase to PLANNING
 exports.setPlanningPhase = async () => {
-  const existingPhase = await Phase.findOne({ where: {} });
-  if (!existingPhase) {
-    Phase.create({ currentPhase: "PLANNING" })
-      .then(() => {
-        return;
-      })
-      .catch((err) => {
-        throw err;
-      });
-  }
   Phase.update({ currentPhase: "PLANNING" }, { where: {} })
     .then(() => {
+      const candidatesAndCompanies = await User.findAll({
+        where: {
+          role: {
+            [Sequelize.Op.or]: [User.ROLES.CANDIDATE, User.ROLES.COMPANY],
+          },
+        },
+      });
+      await Promise.all(
+        candidatesAndCompanies.map(async (user) => {
+          // await MailService.sendPlanningPhase(user.email);
+        })
+      );
       return;
     })
     .catch((err) => {
