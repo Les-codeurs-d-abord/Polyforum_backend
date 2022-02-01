@@ -39,6 +39,11 @@ exports.createOffer = async (req, res) => {
     return res.status(400).send("All input is required");
   }
 
+  const checkCompanyProfile = await Company_Profiles.findByPk(companyProfileId);
+  if (!checkCompanyProfile) {
+    return res.status(409).send("Ce profil d'entreprise n'existe pas");
+  }
+
   const offerData = {
     companyProfileId: companyProfileId,
     name: name,
@@ -66,6 +71,20 @@ exports.createOffer = async (req, res) => {
         label: links[i],
       });
     }
+
+    if (
+      phoneNumber &&
+      description &&
+      checkCompanyProfile.status === "Incomplet"
+    ) {
+      Company_Profiles.update(
+        { status: "Complet" },
+        {
+          where: { id: companyProfileId },
+        }
+      );
+    }
+
     return res.send(offer);
   } catch (err) {
     return res.status(500).send(err.message);

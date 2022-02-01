@@ -34,4 +34,4 @@ exports.findById = async (userId) => {
       { model: CandidateTag },
     ],
   });
-}
+};
