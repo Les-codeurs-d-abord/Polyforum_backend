@@ -40,7 +40,7 @@ exports.setWishPhase = async () => {
       });
       await Promise.all(
         candidatesAndCompanies.map(async (user) => {
-          // await MailService.sendWishPhase(user.email);
+          await MailService.sendWishPhase(user.email);
         })
       );
       return;
@@ -63,7 +63,7 @@ exports.setPlanningPhase = async () => {
       });
       await Promise.all(
         candidatesAndCompanies.map(async (user) => {
-          // await MailService.sendPlanningPhase(user.email);
+          await MailService.sendPlanningPhase(user.email);
         })
       );
       return;
