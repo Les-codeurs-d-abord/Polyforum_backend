@@ -4,7 +4,7 @@ const Wish_CandidateService = require("../services/wish_candidate.service");
 const { Sequelize } = require("../models");
 
 exports.createWishCandidate = async (req, res) => {
-  const { candidateProfileId, offerId } = req.body;
+  const { candidateProfileId, offerId } = req.params;
 
   if (!(candidateProfileId && offerId)) {
     return res.status(400).send("All input is required");
@@ -89,7 +89,7 @@ exports.findAllByCandidateId = async (req, res) => {
 };
 
 exports.checkByCandidateIdAndOfferId = async (req, res) => {
-  const { offerId, candidateProfileId } = req.query;
+  const { candidateProfileId, offerId } = req.params;
 
   if (!(offerId && candidateProfileId)) {
     return res.status(400).send("All input required");
@@ -109,7 +109,7 @@ exports.checkByCandidateIdAndOfferId = async (req, res) => {
 };
 
 exports.delete = async (req, res) => {
-  const { offerId, candidateProfileId } = req.body;
+  const { candidateProfileId, offerId } = req.params;
 
   if (!(offerId && candidateProfileId)) {
     return res.status(400).send("All input required");

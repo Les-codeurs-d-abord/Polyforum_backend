@@ -14,7 +14,11 @@ module.exports = (allowedRoles) => {
             allowedRoles.includes("*") ||
             allowedRoles.includes(decoded.role)
           ) {
-            next();
+            if (req.params.userId == decoded.id) {
+              next();
+            } else {
+              res.status(401).json({ error: "Unauthorized" });
+            }
           } else {
             res.status(401).json({ error: "Unauthorized" });
           }
