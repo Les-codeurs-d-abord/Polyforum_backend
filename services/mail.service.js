@@ -39,7 +39,7 @@ exports.sendAccountCreated = async (address, password) => {
       "<tbody>" +
       "<tr>" +
       '<td  style="width: 50%; text-align: center;">' +
-      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      '<img src="https://media.discordapp.net/attachments/907225277451612180/938373964802170920/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
       "</td>" +
       '<td style="width: 50%;">' +
       '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
@@ -80,7 +80,7 @@ exports.sendPswReset = async (address, password) => {
       "<tbody>" +
       "<tr>" +
       '<td  style="width: 50%; text-align: center;">' +
-      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      '<img src="https://media.discordapp.net/attachments/907225277451612180/938373964802170920/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
       "</td>" +
       '<td style="width: 50%;">' +
       '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
@@ -119,7 +119,7 @@ exports.sendProfileReminderCandidates = async (address) => {
       "<tbody>" +
       "<tr>" +
       '<td  style="width: 50%; text-align: center;">' +
-      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      '<img src="https://media.discordapp.net/attachments/907225277451612180/938373964802170920/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
       "</td>" +
       '<td style="width: 50%;">' +
       '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
@@ -158,7 +158,7 @@ exports.sendProfileReminderCompanies = async (address) => {
       "<tbody>" +
       "<tr>" +
       '<td  style="width: 50%; text-align: center;">' +
-      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      '<img src="https://media.discordapp.net/attachments/907225277451612180/938373964802170920/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
       "</td>" +
       '<td style="width: 50%;">' +
       '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
@@ -197,7 +197,7 @@ exports.sendWishReminderCandidates = async (address) => {
       "<tbody>" +
       "<tr>" +
       '<td  style="width: 50%; text-align: center;">' +
-      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      '<img src="https://media.discordapp.net/attachments/907225277451612180/938373964802170920/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
       "</td>" +
       '<td style="width: 50%;">' +
       '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
@@ -236,7 +236,7 @@ exports.sendWishReminderCompanies = async (address) => {
       "<tbody>" +
       "<tr>" +
       '<td  style="width: 50%; text-align: center;">' +
-      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      '<img src="https://media.discordapp.net/attachments/907225277451612180/938373964802170920/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
       "</td>" +
       '<td style="width: 50%;">' +
       '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
@@ -277,7 +277,7 @@ exports.sendSatisfactionSurvey = async (surveyLink, address) => {
       "<tbody>" +
       "<tr>" +
       '<td  style="width: 50%; text-align: center;">' +
-      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      '<img src="https://media.discordapp.net/attachments/907225277451612180/938373964802170920/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
       "</td>" +
       '<td style="width: 50%;">' +
       '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
@@ -316,7 +316,7 @@ exports.sendWishPhase = async (address) => {
       "<tbody>" +
       "<tr>" +
       '<td  style="width: 50%; text-align: center;">' +
-      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      '<img src="https://media.discordapp.net/attachments/907225277451612180/938373964802170920/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
       "</td>" +
       '<td style="width: 50%;">' +
       '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
@@ -355,7 +355,7 @@ exports.sendPlanningPhase = async (address) => {
       "<tbody>" +
       "<tr>" +
       '<td  style="width: 50%; text-align: center;">' +
-      '<img src="http://localhost:8080/api/res/icons/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
+      '<img src="https://media.discordapp.net/attachments/907225277451612180/938373964802170920/logo_png.png" style="margin-left: 20px; width: 200px; height: 200px;">' +
       "</td>" +
       '<td style="width: 50%;">' +
       '<div style="border-left: 3px solid black; height: 100px; left: 50%; margin-left: -3px; top: 0; display: table-caption">' +
