@@ -12,7 +12,7 @@ module.exports = (app) => {
   // Retrieve all company's offers with id
   router.get(
     "/:userId/offer",
-    auth(["ADMIN", "CANDIDAT"]),
+    auth(["ADMIN", "ENTREPRISE"]),
     companyController.findOffersById
   );
 

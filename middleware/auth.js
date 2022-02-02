@@ -10,7 +10,9 @@ module.exports = (allowedRoles) => {
         if (err) {
           res.status(401).json({ error: "Invalid token." });
         } else {
+          console.log(decoded);
           if (
+
             allowedRoles.includes("*") ||
             allowedRoles.includes(decoded.role)
           ) {

@@ -5,7 +5,7 @@ const Offer_Links = db.offer_links;
 const Company_Profiles = db.company_profiles;
 const WishCandidate = db.wish_candidate;
 const { Sequelize } = require("../models");
-
+const User = db.users;
 const fs = require("fs");
 
 // Create an offer
@@ -77,7 +77,17 @@ exports.createOffer = async (req, res) => {
       );
     }
 
-    return res.send(offer);
+    const createdOffer = await Offers.findOne(
+      {
+        where:
+          { id: offer.id },
+        include: [
+          { model: Company_Profiles, include:[{model: User}] },
+        ],
+      }
+    );
+
+    return res.send(createdOffer);
   } catch (err) {
     return res.status(500).send(err.message);
   }

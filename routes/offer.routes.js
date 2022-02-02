@@ -18,7 +18,7 @@ module.exports = (app) => {
   router.post("/:companyProfileId", checkCompanyId, offer.createOffer);
 
   // Get all offers
-  router.get("", auth(["ADMIN, CANDIDAT"]), offer.getAllOffer);
+  router.get("", auth(["ADMIN", "CANDIDAT"]), offer.getAllOffer);
 
   // Update offer
   router.put("/:offerId", checkOfferId, offer.updateOffer);
