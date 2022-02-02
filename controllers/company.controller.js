@@ -52,7 +52,7 @@ exports.createCompany = async (req, res) => {
     );
     // console.log("Company profile created : ", companyProfile.toJSON())
     // TODO Décommenter pour l'envoi des mails
-    // await MailService.sendAccountCreated(user.email, password);
+    await MailService.sendAccountCreated(user.email, password);
 
     console.log(password);
 

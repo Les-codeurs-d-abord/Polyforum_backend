@@ -34,35 +34,59 @@ exports.getToken = async (req, res) => {
             return res.status(401).json({ error: "Wrong password." });
           }
 
-          if (user.role === User.ROLES.CANDIDATE) {
-            CandidateProfile.update(
-              { status: "Incomplet" },
-              { where: { userId: user.id, status: "Jamais connecté" } }
-            ).catch((error) => {
-              return res.status(500).json({ error });
-            });
-          } else if (user.role === User.ROLES.COMPANY) {
-            CompanyProfile.update(
-              { status: "Incomplet" },
-              { where: { userId: user.id, status: "Jamais connecté" } }
-            ).catch((error) => {
-              return res.status(500).json({ error });
-            });
-          }
-
           var payload = {
             email: user.email,
             role: user.role,
             id: user.id,
           };
 
-          return res.status(200).json({
-            payload,
-            token: jwt.sign(payload, process.env.JWT_KEY, {
-              algorithm: "HS256",
-              expiresIn: "24h",
-            }),
-          });
+          if (user.role === User.ROLES.CANDIDATE) {
+            CandidateProfile.update(
+              { status: "Incomplet" },
+              { where: { userId: user.id, status: "Jamais connecté" } }
+            ).catch((error) => res.status(500).json({ error }));
+            CandidateProfile.findOne({
+              where: { userId: user.id },
+              raw: true,
+            }).then((value) => {
+              console.log(value.id);
+              payload.candidateProfileId = value.id;
+              res.status(200).json({
+                payload,
+                token: jwt.sign(payload, process.env.JWT_KEY, {
+                  algorithm: "HS256",
+                  expiresIn: "24h",
+                }),
+              });
+            });
+          } else if (user.role === User.ROLES.COMPANY) {
+            CompanyProfile.update(
+              { status: "Incomplet" },
+              { where: { userId: user.id, status: "Jamais connecté" } }
+            ).catch((error) => res.status(500).json({ error }));
+            CompanyProfile.findOne({
+              where: { userId: user.id },
+              raw: true,
+            }).then((value) => {
+              console.log(value.id);
+              payload.companyProfileId = value.id;
+              res.status(200).json({
+                payload,
+                token: jwt.sign(payload, process.env.JWT_KEY, {
+                  algorithm: "HS256",
+                  expiresIn: "24h",
+                }),
+              });
+            });
+          } else {
+            res.status(200).json({
+              payload,
+              token: jwt.sign(payload, process.env.JWT_KEY, {
+                algorithm: "HS256",
+                expiresIn: "24h",
+              }),
+            });
+          }
         })
         .catch((error) => {
           return res.status(500).json({ error });

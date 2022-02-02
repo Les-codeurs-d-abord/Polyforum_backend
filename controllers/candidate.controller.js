@@ -54,7 +54,7 @@ exports.createCandidate = async (req, res) => {
     console.log("Candidate profile created : ", candidateProfile.toJSON());
     console.log("Password ", password);
     // TODO Décommenter pour l'envoi des mails
-    // await MailService.sendAccountCreated(user.email, password);
+    await MailService.sendAccountCreated(user.email, password);
 
     return res.status(201).send("Candidat créé avec succès");
   } catch (err) {
@@ -318,50 +318,6 @@ exports.uploadCV = async (req, res) => {
     }
     // SUCCESS, CV successfully uploaded
     return res.send(filePath);
-  } catch (err) {
-    return res.status(500).send(err.message);
-  }
-};
-
-// Get links of a specific user
-exports.linksList = async (req, res) => {
-  const userId = req.params.userId;
-
-  //Check if this candidate profile exists
-  const checkCandidateProfile = await CandidateProfile.findOne({
-    where: { userId: userId },
-  });
-  if (!checkCandidateProfile) {
-    return res.status(409).send("Ce profil de candidat n'existe pas");
-  }
-
-  try {
-    const candidate_links = await CandidateLink.findAll({
-      where: { candidateProfileId: checkCandidateProfile.id },
-    });
-    return res.send(candidate_links);
-  } catch (err) {
-    return res.status(500).send(err.message);
-  }
-};
-
-// Get tags of a specific user
-exports.tagsList = async (req, res) => {
-  const userId = req.params.userId;
-
-  //Check if this candidate profile exists
-  const checkCandidateProfile = await CandidateProfile.findOne({
-    where: { userId: userId },
-  });
-  if (!checkCandidateProfile) {
-    return res.status(409).send("Ce profil de candidat n'existe pas");
-  }
-
-  try {
-    const candidate_tags = await CandidateTag.findAll({
-      where: { candidateProfileId: checkCandidateProfile.id },
-    });
-    return res.send(candidate_tags);
   } catch (err) {
     return res.status(500).send(err.message);
   }

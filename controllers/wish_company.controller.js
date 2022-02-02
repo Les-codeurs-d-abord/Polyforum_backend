@@ -4,7 +4,7 @@ const Wish_CompanyService = require("../services/wish_company.service");
 const { Sequelize } = require("../models");
 
 exports.createWishCompany = async (req, res) => {
-  const { candidateProfileId, companyProfileId } = req.body;
+  const { candidateProfileId, companyProfileId } = req.params;
 
   if (!(candidateProfileId && companyProfileId)) {
     return res.status(400).send("All input is required");

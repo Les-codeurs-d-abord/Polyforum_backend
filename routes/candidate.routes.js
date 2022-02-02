@@ -1,22 +1,24 @@
 module.exports = (app) => {
   var multiparty = require("connect-multiparty");
   const candidateController = require("../controllers/candidate.controller.js");
-  const checkRoleAndUserId = require("../middleware/checkRoleAndUserId");
   const auth = require("../middleware/auth");
+  const checkRoleAndUserId = require("../middleware/checkRoleAndUserId");
 
   const router = require("express").Router();
 
   // Retrieve all candidates
-  router.get("/", candidateController.candidateList);
+  router.get(
+    "/",
+    auth(["ADMIN", "ENTREPRISE"]),
+    candidateController.candidateList
+  );
 
   // Retrieve a single candidate with id
-  router.get("/:userId", candidateController.findById);
-
-  // Get all the links of a candidate
-  router.get("/:userId/links", candidateController.linksList);
-
-  // Get all the tags of a candidate
-  router.get("/:userId/tags", candidateController.tagsList);
+  router.get(
+    "/:userId",
+    auth(["*"]),
+    candidateController.findById
+  );
 
   // Create a new candidate User
   router.post("/", auth(["ADMIN"]), candidateController.createCandidate);
@@ -40,15 +42,20 @@ module.exports = (app) => {
   });
   router.post(
     "/:userId/uploadCV",
+    checkRoleAndUserId(["CANDIDAT"]),
     multipartyCVMiddleware,
     candidateController.uploadCV
   );
 
   // Update a candidate profile with id
-  router.put("/:userId", candidateController.updateCandidateProfile);
+  router.put(
+    "/:userId",
+    checkRoleAndUserId(["CANDIDAT"]),
+    candidateController.updateCandidateProfile
+  );
 
   // Delete a single candidate with id
-  router.delete("/:userId", candidateController.deleteById);
+  router.delete("/:userId", auth(["ADMIN"]), candidateController.deleteById);
 
   app.use("/api/candidates", router);
 };

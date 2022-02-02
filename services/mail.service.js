@@ -8,6 +8,7 @@ require("dotenv").config();
 
 let transporter = nodemailer.createTransport({
   service: "gmail",
+  pool: true,
   auth: {
     user: process.env.POLYFORUM_MAIL,
     pass: process.env.POLYFORUM_MAIL_PASSWORD,
