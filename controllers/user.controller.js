@@ -30,7 +30,7 @@ exports.update = async (req, res) => {
   try {
     const password = await UserService.update(userId, email);
     // TODO Décommenter pour l'envoi des mails
-    // await MailService.sendAccountCreated(email, password);
+    await MailService.sendAccountCreated(email, password);
     return res.send(`Utilisateur ${userId} mis à jour`);
   } catch (err) {
     return res.status(500).send(err.message);
@@ -90,7 +90,7 @@ exports.resetPassword = async (req, res) => {
     const password = await UserService.update(userId, checkUser.email);
     console.log("New password :", password);
     // TODO Décommenter pour l'envoi des mails
-    // await MailService.sendPswReset(checkUser.email, password);
+    await MailService.sendPswReset(checkUser.email, password);
     return res.send(`Mot de passe de l'utilisateur ${userId} réinitialisé`);
   } catch (err) {
     return res.status(500).send(err.message);
@@ -110,7 +110,7 @@ exports.resetForgottenPassword = async (req, res) => {
     const password = await UserService.update(checkUser.id, checkUser.email);
     console.log("New password :", password);
     // TODO Décommenter pour l'envoi des mails
-    // await MailService.sendPswReset(checkUser.email, password);
+    await MailService.sendPswReset(checkUser.email, password);
     return res.send(
       `Mot de passe de l'utilisateur ${checkUser.id} réinitialisé`
     );
@@ -138,7 +138,7 @@ exports.sendRemindersCandidates = async (req, res) => {
         await Promise.all(
           lateCandidates.map(async (candidate) => {
             console.log(candidate.user.email);
-            // await MailService.sendProfileReminderCandidates(candidate.user.email);
+            await MailService.sendProfileReminderCandidates(candidate.user.email);
           })
         );
         break;
@@ -164,7 +164,7 @@ exports.sendRemindersCandidates = async (req, res) => {
           wishlessCandidates.map(async (candidate) => {
             if (candidate.wishesCount === 0) {
               console.log(candidate.user.email);
-              // await MailService.sendWishReminderCandidates(candidate.user.email);
+              await MailService.sendWishReminderCandidates(candidate.user.email);
             }
           })
         );
@@ -211,7 +211,7 @@ exports.sendRemindersCompanies = async (req, res) => {
               )
             ) {
               console.log(company.user.email);
-              // await MailService.sendProfileReminderCompanies(company.user.email);
+              await MailService.sendProfileReminderCompanies(company.user.email);
             }
           })
         );
@@ -238,7 +238,7 @@ exports.sendRemindersCompanies = async (req, res) => {
           wishlessCompanies.map(async (company) => {
             if (company.wishesCount === 0) {
               console.log(company.user.email);
-              // await MailService.sendWishReminderCompanies(company.user.email);
+              await MailService.sendWishReminderCompanies(company.user.email);
             }
           })
         );
@@ -262,11 +262,12 @@ exports.sendSatisfactionSurvey = async (req, res) => {
     where: {
       role: { [Sequelize.Op.or]: [User.ROLES.CANDIDATE, User.ROLES.COMPANY] },
     },
+    raw: true,
   });
 
   await Promise.all(
     candidatesAndCompanies.map(async (user) => {
-      // await MailService.sendSatisfactionSurvey(surveyLink, user.email);
+      await MailService.sendSatisfactionSurvey(surveyLink, user.email);
     })
   );
   return res.send("Mails envoyés");

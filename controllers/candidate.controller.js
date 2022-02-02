@@ -54,7 +54,7 @@ exports.createCandidate = async (req, res) => {
     console.log("Candidate profile created : ", candidateProfile.toJSON());
     console.log("Password ", password);
     // TODO Décommenter pour l'envoi des mails
-    // await MailService.sendAccountCreated(user.email, password);
+    await MailService.sendAccountCreated(user.email, password);
 
     return res.status(201).send("Candidat créé avec succès");
   } catch (err) {
