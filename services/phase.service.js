@@ -2,6 +2,9 @@ const db = require("../models");
 const Phase = db.phase;
 const User = db.users;
 const MailService = require("../services/mail.service");
+const { Sequelize } = require("../models");
+
+
 
 // Set forum phase to INSCRIPTION
 exports.setInscriptionPhase = async () => {
