@@ -225,6 +225,8 @@ exports.findFreeCandidatesAtGivenPeriod = async (req, res) => {
     }
     );
 
+    console.log(freeCandidates);
+
     return res.send(freeCandidates);
   } catch (err) {
     throw err;
